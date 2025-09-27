@@ -1,183 +1,546 @@
-{% extends 'waf_proxy/base.html' %}
+{% extends 'waf_proxy/main_layout.html' %}
 
-{% block title %}Security Rules - WAF Admin{% endblock %}
+{% block page_title %}Security Rules Management{% endblock %}
+{% block page_subtitle %}Create and manage global security rules for all customers{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">
-        <i class="fas fa-shield-alt text-primary me-2"></i>Security Rules Management
-    </h1>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRuleModal">
-        <i class="fas fa-plus me-2"></i>Create Rule
-    </button>
+{% block breadcrumb_items %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <span class="ml-1 text-sm font-medium text-cf-500">Security Rules</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button onclick="openModal('addRuleModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-shield-plus mr-2"></i>
+    Create Rule
+</button>
+<button onclick="openModal('importRulesModal')" class="bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-upload mr-2"></i>
+    Bulk Import
+</button>
+<button onclick="openModal('templateModal')" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-layer-group mr-2"></i>
+    Rule Templates
+</button>
+{% endblock %}
+
+{% block main_content %}
+<!-- Rules Statistics -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-primary-100 mr-4">
+                <i class="fas fa-shield-alt text-primary-600"></i>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-cf-900">{{ rules.count }}</div>
+                <div class="text-sm text-cf-600">Total Rules</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-green-100 mr-4">
+                <i class="fas fa-check-circle text-green-600"></i>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-cf-900">{{ rules.filter.is_active.count }}</div>
+                <div class="text-sm text-cf-600">Active Rules</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 mr-4">
+                <i class="fas fa-globe text-blue-600"></i>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-cf-900">{{ rules.filter.is_global.count }}</div>
+                <div class="text-sm text-cf-600">Global Rules</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-red-100 mr-4">
+                <i class="fas fa-ban text-red-600"></i>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-cf-900">{{ total_blocks_today|default:0 }}</div>
+                <div class="text-sm text-cf-600">Blocks Today</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 mr-4">
+                <i class="fas fa-users text-yellow-600"></i>
+            </div>
+            <div>
+                <div class="text-xl font-bold text-cf-900">{{ customers_using_rules|default:0 }}</div>
+                <div class="text-sm text-cf-600">Sites Protected</div>
+            </div>
+        </div>
+    </div>
 </div>
 
-{% if rules %}
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Rule Name</th>
-                            <th>Type</th>
-                            <th>Pattern</th>
-                            <th>Action</th>
-                            <th>Priority</th>
-                            <th>Global</th>
-                            <th>Status</th>
-                            <th>Sites Using</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for rule in rules %}
-                        <tr>
-                            <td>
-                                <strong>{{ rule.name }}</strong>
+<!-- Rule Categories Tabs -->
+<div class="bg-white border border-cf-200 rounded-lg shadow-cf mb-8">
+    <div class="border-b border-cf-200">
+        <nav class="-mb-px flex space-x-8 px-6">
+            <button onclick="filterRules('all')" id="all-tab" class="rule-tab py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-primary-500 text-primary-600">
+                All Rules
+            </button>
+            <button onclick="filterRules('sql_injection')" id="sql_injection-tab" class="rule-tab py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-cf-500 hover:text-cf-700 hover:border-cf-300">
+                SQL Injection
+            </button>
+            <button onclick="filterRules('xss')" id="xss-tab" class="rule-tab py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-cf-500 hover:text-cf-700 hover:border-cf-300">
+                XSS Protection
+            </button>
+            <button onclick="filterRules('rate_limit')" id="rate_limit-tab" class="rule-tab py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-cf-500 hover:text-cf-700 hover:border-cf-300">
+                Rate Limiting
+            </button>
+            <button onclick="filterRules('custom')" id="custom-tab" class="rule-tab py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 border-transparent text-cf-500 hover:text-cf-700 hover:border-cf-300">
+                Custom
+            </button>
+        </nav>
+    </div>
+
+    <!-- Rules Table -->
+    <div class="overflow-x-auto">
+        {% if rules %}
+            <table class="w-full text-sm text-left text-cf-500">
+                <thead class="text-xs text-cf-700 uppercase bg-cf-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-4">Rule Details</th>
+                        <th scope="col" class="px-6 py-4">Type & Action</th>
+                        <th scope="col" class="px-6 py-4">Pattern</th>
+                        <th scope="col" class="px-6 py-4">Scope</th>
+                        <th scope="col" class="px-6 py-4">Usage</th>
+                        <th scope="col" class="px-6 py-4">Status</th>
+                        <th scope="col" class="px-6 py-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="rulesTableBody">
+                    {% for rule in rules %}
+                    <tr class="rule-row bg-white border-b border-cf-200 hover:bg-cf-50" data-rule-type="{{ rule.rule_type }}">
+                        <td class="px-6 py-4">
+                            <div>
+                                <div class="font-medium text-cf-900">{{ rule.name }}</div>
                                 {% if rule.description %}
-                                    <br><small class="text-muted">{{ rule.description|truncatechars:50 }}</small>
+                                    <div class="text-sm text-cf-600 mt-1">{{ rule.description|truncatechars:60 }}</div>
                                 {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary">{{ rule.rule_type }}</span>
-                            </td>
-                            <td>
-                                <code class="small">{{ rule.pattern|truncatechars:30 }}</code>
-                            </td>
-                            <td>
-                                <span class="badge {% if rule.action == 'BLOCK' %}bg-danger{% elif rule.action == 'LOG' %}bg-warning{% else %}bg-info{% endif %}">
+                                <div class="text-xs text-cf-500 mt-1">Created {{ rule.created_at|date:"M d, Y" }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="space-y-1">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800">
+                                    {{ rule.rule_type|title }}
+                                </span>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if rule.action == 'BLOCK' %}bg-red-100 text-red-800{% elif rule.action == 'LOG' %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
                                     {{ rule.action }}
                                 </span>
-                            </td>
-                            <td>{{ rule.priority }}</td>
-                            <td>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <code class="text-xs bg-cf-100 text-cf-800 px-2 py-1 rounded block">{{ rule.pattern|truncatechars:40 }}</code>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if rule.is_global %}bg-blue-100 text-blue-800{% else %}bg-cf-100 text-cf-800{% endif %}">
                                 {% if rule.is_global %}
-                                    <i class="fas fa-globe text-success" title="Global Rule"></i>
+                                    <i class="fas fa-globe mr-1"></i>Global
                                 {% else %}
-                                    <i class="fas fa-lock text-muted" title="Custom Rule"></i>
+                                    <i class="fas fa-user mr-1"></i>Custom
                                 {% endif %}
-                            </td>
-                            <td>
-                                {% if rule.is_active %}
-                                    <span class="badge bg-success">Active</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Inactive</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge bg-info">{{ rule.siterule_set.count }}</span>
-                            </td>
-                            <td>{{ rule.created_at|date:"M d, Y" }}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-info" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-outline-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-cf-900">{{ rule.siterule_set.count }} sites</div>
+                            <div class="text-xs text-cf-600">{{ rule.requestlog_set.count|default:0 }} triggers</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" class="sr-only peer" {% if rule.is_active %}checked{% endif %} onchange="toggleRule({{ rule.id }}, this)">
+                                <div class="w-9 h-5 bg-cf-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="editRule({{ rule.id }})" class="text-secondary-600 hover:text-secondary-700 p-2 rounded-lg hover:bg-secondary-50 transition-colors duration-200" title="Edit Rule">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="duplicateRule({{ rule.id }})" class="text-blue-600 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200" title="Duplicate Rule">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button onclick="viewRuleStats({{ rule.id }})" class="text-green-600 hover:text-green-700 p-2 rounded-lg hover:bg-green-50 transition-colors duration-200" title="View Statistics">
+                                    <i class="fas fa-chart-line"></i>
+                                </button>
+                                <button onclick="deleteRule({{ rule.id }})" class="text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200" title="Delete Rule">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="p-12 text-center">
+                <i class="fas fa-shield-alt text-cf-300 text-6xl mb-6"></i>
+                <h3 class="text-xl font-semibold text-cf-900 mb-3">No Security Rules</h3>
+                <p class="text-cf-600 mb-8 max-w-md mx-auto">Create your first security rule to start protecting customer sites from threats.</p>
+                <button onclick="openModal('addRuleModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-8 py-3 transition-colors duration-200 inline-flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create First Rule
+                </button>
             </div>
-        </div>
+        {% endif %}
     </div>
-{% else %}
-    <div class="card">
-        <div class="card-body text-center py-5">
-            <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
-            <h4 class="text-muted">No Security Rules</h4>
-            <p class="text-muted mb-4">Create your first security rule to start protecting sites.</p>
-            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addRuleModal">
-                <i class="fas fa-plus me-2"></i>Create First Rule
-            </button>
-        </div>
-    </div>
-{% endif %}
+</div>
 
-<!-- Add Rule Modal -->
-<div class="modal fade" id="addRuleModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Security Rule</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Rule Categories Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+    <!-- SQL Injection Rules -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="p-3 rounded-full bg-red-100 mr-4">
+                    <i class="fas fa-database text-red-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-medium text-cf-900">SQL Injection</h3>
+                    <p class="text-sm text-cf-600">Database attack protection</p>
+                </div>
             </div>
-            <form method="post">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Rule Name</label>
-                                <input type="text" class="form-control" id="name" name="name" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="rule_type" class="form-label">Rule Type</label>
-                                <select class="form-select" id="rule_type" name="rule_type" required>
-                                    <option value="">Select type...</option>
-                                    <option value="SQL_INJECTION">SQL Injection</option>
-                                    <option value="XSS">Cross-Site Scripting (XSS)</option>
-                                    <option value="PATH_TRAVERSAL">Path Traversal</option>
-                                    <option value="USER_AGENT">User Agent Filter</option>
-                                    <option value="IP_WHITELIST">IP Whitelist</option>
-                                    <option value="IP_BLACKLIST">IP Blacklist</option>
-                                    <option value="RATE_LIMIT">Rate Limiting</option>
-                                    <option value="CUSTOM">Custom Pattern</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="pattern" class="form-label">Pattern/Rule</label>
-                        <textarea class="form-control" id="pattern" name="pattern" rows="3" required placeholder="Enter regex pattern or rule definition"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="2" placeholder="Describe what this rule does"></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="action" class="form-label">Action</label>
-                                <select class="form-select" id="action" name="action" required>
-                                    <option value="BLOCK">Block Request</option>
-                                    <option value="LOG">Log Only</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="priority" class="form-label">Priority</label>
-                                <input type="number" class="form-control" id="priority" name="priority" value="100" min="1" max="1000">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check mt-4">
-                                <input class="form-check-input" type="checkbox" id="is_global" name="is_global" checked>
-                                <label class="form-check-label" for="is_global">
-                                    Global Rule
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-cf-600">Active Rules</span>
+                    <span class="font-medium text-cf-900">
+                        {{ rules.filter.rule_type__sql_injection.filter.is_active.count|default:0 }}
+                    </span>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="add_rule" class="btn btn-primary">Create Rule</button>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-red-600 h-2 rounded-full" style="width: 85%"></div>
                 </div>
-            </form>
+                <div class="text-xs text-cf-500">Coverage: Excellent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- XSS Protection Rules -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="p-3 rounded-full bg-yellow-100 mr-4">
+                    <i class="fas fa-code text-yellow-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-medium text-cf-900">XSS Protection</h3>
+                    <p class="text-sm text-cf-600">Script injection prevention</p>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-cf-600">Active Rules</span>
+                    <span class="font-medium text-cf-900">
+                        {{ rules.filter.rule_type__xss.filter.is_active.count|default:0 }}
+                    </span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-yellow-600 h-2 rounded-full" style="width: 70%"></div>
+                </div>
+                <div class="text-xs text-cf-500">Coverage: Good</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Limiting Rules -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="p-3 rounded-full bg-blue-100 mr-4">
+                    <i class="fas fa-tachometer-alt text-blue-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-medium text-cf-900">Rate Limiting</h3>
+                    <p class="text-sm text-cf-600">Traffic throttling rules</p>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-cf-600">Active Rules</span>
+                    <span class="font-medium text-cf-900">
+                        {{ rules.filter.rule_type__rate_limit.filter.is_active.count|default:0 }}
+                    </span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: 45%"></div>
+                </div>
+                <div class="text-xs text-cf-500">Coverage: Moderate</div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Modals -->
+{% block modals %}
+<!-- Add Rule Modal -->
+<div id="addRuleModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Create Security Rule</h3>
+            <button onclick="closeModal('addRuleModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <form action="{% url 'rule_add' %}" method="post" class="p-6 space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-cf-900 mb-2">Rule Name</label>
+                    <input type="text" name="name" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Advanced SQL Injection Protection" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-cf-900 mb-2">Rule Type</label>
+                    <select name="rule_type" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
+                        <option value="">Select type...</option>
+                        <option value="sql_injection">SQL Injection</option>
+                        <option value="xss">Cross-Site Scripting</option>
+                        <option value="path_traversal">Path Traversal</option>
+                        <option value="rate_limit">Rate Limiting</option>
+                        <option value="bot_detection">Bot Detection</option>
+                        <option value="custom">Custom Pattern</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Security Pattern</label>
+                <textarea name="pattern" rows="4" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Enter regex pattern, rate limit configuration, or custom rule definition" required></textarea>
+                <p class="mt-1 text-xs text-cf-500">Use regex for pattern matching or JSON for complex rules</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-cf-900 mb-2">Action</label>
+                    <select name="action" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
+                        <option value="BLOCK">Block Request</option>
+                        <option value="LOG">Log Only</option>
+                        <option value="ALLOW">Allow</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-cf-900 mb-2">Priority</label>
+                    <select name="priority" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                        <option value="high">High</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Description</label>
+                <textarea name="description" rows="3" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Describe what this rule protects against and when it should trigger"></textarea>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_global" checked class="w-4 h-4 text-primary-600 bg-cf-100 border-cf-300 rounded focus:ring-primary-500 focus:ring-2">
+                    <label class="ml-2 text-sm text-cf-900">Make this rule available to all customers</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" name="is_active" checked class="w-4 h-4 text-primary-600 bg-cf-100 border-cf-300 rounded focus:ring-primary-500 focus:ring-2">
+                    <label class="ml-2 text-sm text-cf-900">Activate rule immediately</label>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-cf-200">
+                <button type="button" onclick="closeModal('addRuleModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button type="submit" class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    Create Rule
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rule Templates Modal -->
+<div id="templateModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-4xl mx-4 max-h-screen overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Security Rule Templates</h3>
+            <button onclick="closeModal('templateModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- SQL Injection Templates -->
+                <div class="border border-cf-200 rounded-lg p-4">
+                    <h4 class="font-medium text-cf-900 mb-3 flex items-center">
+                        <i class="fas fa-database text-red-600 mr-2"></i>
+                        SQL Injection Templates
+                    </h4>
+                    <div class="space-y-2">
+                        <button onclick="useTemplate('sql_basic')" class="w-full text-left p-3 rounded-lg hover:bg-cf-50 border border-cf-300 transition-colors duration-200">
+                            <div class="font-medium text-cf-900">Basic SQL Protection</div>
+                            <div class="text-sm text-cf-600">Blocks common SQL injection patterns</div>
+                        </button>
+                        <button onclick="useTemplate('sql_advanced')" class="w-full text-left p-3 rounded-lg hover:bg-cf-50 border border-cf-300 transition-colors duration-200">
+                            <div class="font-medium text-cf-900">Advanced SQL Protection</div>
+                            <div class="text-sm text-cf-600">Comprehensive SQL injection prevention</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- XSS Templates -->
+                <div class="border border-cf-200 rounded-lg p-4">
+                    <h4 class="font-medium text-cf-900 mb-3 flex items-center">
+                        <i class="fas fa-code text-yellow-600 mr-2"></i>
+                        XSS Protection Templates
+                    </h4>
+                    <div class="space-y-2">
+                        <button onclick="useTemplate('xss_basic')" class="w-full text-left p-3 rounded-lg hover:bg-cf-50 border border-cf-300 transition-colors duration-200">
+                            <div class="font-medium text-cf-900">Basic XSS Protection</div>
+                            <div class="text-sm text-cf-600">Blocks script injection attempts</div>
+                        </button>
+                        <button onclick="useTemplate('xss_content')" class="w-full text-left p-3 rounded-lg hover:bg-cf-50 border border-cf-300 transition-colors duration-200">
+                            <div class="font-medium text-cf-900">Content XSS Protection</div>
+                            <div class="text-sm text-cf-600">Advanced content filtering</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+function filterRules(type) {
+    // Remove active class from all tabs
+    document.querySelectorAll('.rule-tab').forEach(tab => {
+        tab.classList.remove('border-primary-500', 'text-primary-600');
+        tab.classList.add('border-transparent', 'text-cf-500');
+    });
+    
+    // Add active class to selected tab
+    const activeTab = document.getElementById(type + '-tab');
+    activeTab.classList.add('border-primary-500', 'text-primary-600');
+    activeTab.classList.remove('border-transparent', 'text-cf-500');
+    
+    // Filter table rows
+    const rows = document.querySelectorAll('.rule-row');
+    rows.forEach(row => {
+        if (type === 'all' || row.dataset.ruleType === type) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function toggleRule(ruleId, checkbox) {
+    const isEnabled = checkbox.checked;
+    const action = isEnabled ? 'enable' : 'disable';
+    
+    checkbox.disabled = true;
+    
+    // Simulate API call
+    setTimeout(() => {
+        checkbox.disabled = false;
+        showNotification(`Rule ${action}d successfully!`, 'success');
+    }, 500);
+}
+
+function editRule(ruleId) {
+    window.location.href = `{% url 'rule_edit' 0 %}`.replace('0', ruleId);
+}
+
+function duplicateRule(ruleId) {
+    if (confirm('Create a copy of this rule?')) {
+        showNotification('Rule duplicated successfully!', 'success');
+    }
+}
+
+function viewRuleStats(ruleId) {
+    alert(`Viewing statistics for rule ${ruleId}`);
+}
+
+function deleteRule(ruleId) {
+    if (confirm('Are you sure you want to delete this rule? This action cannot be undone and will affect all sites using this rule.')) {
+        window.location.href = `{% url 'rule_delete' 0 %}`.replace('0', ruleId);
+    }
+}
+
+function useTemplate(templateType) {
+    closeModal('templateModal');
+    
+    // Pre-fill the add rule modal with template data
+    const templates = {
+        'sql_basic': {
+            name: 'Basic SQL Injection Protection',
+            type: 'sql_injection',
+            pattern: "(?i)(union|select|insert|update|delete|drop|create|alter)\\s",
+            description: 'Blocks common SQL injection keywords and patterns'
+        },
+        'sql_advanced': {
+            name: 'Advanced SQL Injection Protection',
+            type: 'sql_injection',
+            pattern: "(?i)(union|select|insert|update|delete|drop|create|alter|exec|execute|sp_|xp_|substring|ascii|char|concat|cast|convert)\\s",
+            description: 'Comprehensive SQL injection protection with advanced patterns'
+        },
+        'xss_basic': {
+            name: 'Basic XSS Protection',
+            type: 'xss',
+            pattern: "(?i)(<script|javascript:|vbscript:|onload|onerror|onclick)",
+            description: 'Blocks basic XSS attack vectors and script injection'
+        },
+        'xss_content': {
+            name: 'Content XSS Protection',
+            type: 'xss',
+            pattern: "(?i)(expression\\(|@import|<iframe|<object|<embed|<link)",
+            description: 'Advanced XSS protection for content-based attacks'
+        }
+    };
+    
+    const template = templates[templateType];
+    if (template) {
+        document.querySelector('input[name="name"]').value = template.name;
+        document.querySelector('select[name="rule_type"]').value = template.type;
+        document.querySelector('textarea[name="pattern"]').value = template.pattern;
+        document.querySelector('textarea[name="description"]').value = template.description;
+        
+        openModal('addRuleModal');
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle mr-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+</script>
 {% endblock %}

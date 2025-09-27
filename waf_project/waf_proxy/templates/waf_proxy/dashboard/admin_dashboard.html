@@ -1,95 +1,110 @@
-{% extends "waf_proxy/dashboard/layout.html" %}
+{% extends "waf_proxy/main_layout.html" %}
 
 {% block page_title %}Admin Dashboard{% endblock %}
 {% block page_subtitle %}Comprehensive security overview and system management{% endblock %}
 
 {% block page_actions %}
-<a href="{% url 'rule_list' %}" class="btn btn-primary">
-    <i class="fas fa-plus"></i>
-    Add Rule
+<button onclick="openModal('addRuleModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-shield-plus mr-2"></i>
+    Create Rule
+</button>
+<a href="{% url 'rule_list' %}" class="bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-list mr-2"></i>
+    All Rules
 </a>
-<a href="{% url 'log_list' %}" class="btn btn-secondary">
-    <i class="fas fa-download"></i>
+<button onclick="exportSystemData()" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-download mr-2"></i>
     Export Data
-</a>
+</button>
 {% endblock %}
 
-{% block dashboard_content %}
-<!-- Key Metrics Section -->
-<div class="dashboard-section">
-    <div class="section-header">
-        <h2 class="section-title">Key Metrics</h2>
-        <div class="section-actions">
-            <button class="btn btn-secondary btn-sm">
-                <i class="fas fa-sync-alt"></i>
-                Refresh
-            </button>
+{% block main_content %}
+<!-- Welcome Banner -->
+<div class="bg-gradient-to-r from-primary-500 to-secondary-600 rounded-lg p-8 mb-8 text-white">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold mb-2">Welcome back, Admin!</h2>
+            <p class="text-primary-100">System is running smoothly. {{ total_customers }} customers are protected across {{ total_sites }} sites.</p>
+        </div>
+        <div class="hidden lg:block">
+            <div class="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-crown text-white text-3xl"></i>
+            </div>
         </div>
     </div>
-    
-    <div class="dashboard-grid cols-4">
-        <!-- Total Customers -->
-        <div class="stats-card">
-            <div class="stats-content">
-                <div class="stats-icon primary">
-                    <i class="fas fa-users"></i>
+</div>
+
+<!-- Key Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Customers -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-primary-100 mr-4">
+                    <i class="fas fa-users text-primary-600 text-xl"></i>
                 </div>
-                <div class="stats-info">
-                    <div class="stats-value">{{ total_customers }}</div>
-                    <div class="stats-label">Total Customers</div>
-                    <div class="stats-change positive">
-                        <i class="fas fa-arrow-up"></i>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ total_customers }}</div>
+                    <div class="text-sm text-cf-600">Total Customers</div>
+                    <div class="text-xs text-green-600 mt-1 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>
                         +12% this month
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Protected Sites -->
-        <div class="stats-card">
-            <div class="stats-content">
-                <div class="stats-icon success">
-                    <i class="fas fa-shield-alt"></i>
+    <!-- Protected Sites -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-secondary-100 mr-4">
+                    <i class="fas fa-shield-alt text-secondary-600 text-xl"></i>
                 </div>
-                <div class="stats-info">
-                    <div class="stats-value">{{ total_sites }}</div>
-                    <div class="stats-label">Protected Sites</div>
-                    <div class="stats-change positive">
-                        <i class="fas fa-arrow-up"></i>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ total_sites }}</div>
+                    <div class="text-sm text-cf-600">Protected Sites</div>
+                    <div class="text-xs text-green-600 mt-1 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>
                         +5% this month
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Today's Requests -->
-        <div class="stats-card">
-            <div class="stats-content">
-                <div class="stats-icon warning">
-                    <i class="fas fa-globe"></i>
+    <!-- Today's Requests -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 mr-4">
+                    <i class="fas fa-globe text-blue-600 text-xl"></i>
                 </div>
-                <div class="stats-info">
-                    <div class="stats-value">{{ total_requests_today|floatformat:0 }}</div>
-                    <div class="stats-label">Requests Today</div>
-                    <div class="stats-change positive">
-                        <i class="fas fa-arrow-up"></i>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ total_requests_today|floatformat:0 }}</div>
+                    <div class="text-sm text-cf-600">Requests Today</div>
+                    <div class="text-xs text-green-600 mt-1 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>
                         +23% vs yesterday
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Blocked Attacks -->
-        <div class="stats-card">
-            <div class="stats-content">
-                <div class="stats-icon danger">
-                    <i class="fas fa-ban"></i>
+    <!-- Blocked Attacks -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 mr-4">
+                    <i class="fas fa-ban text-red-600 text-xl"></i>
                 </div>
-                <div class="stats-info">
-                    <div class="stats-value">{{ blocked_today }}</div>
-                    <div class="stats-label">Threats Blocked</div>
-                    <div class="stats-change negative">
-                        <i class="fas fa-arrow-down"></i>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ blocked_today }}</div>
+                    <div class="text-sm text-cf-600">Threats Blocked</div>
+                    <div class="text-xs text-red-600 mt-1 flex items-center">
+                        <i class="fas fa-arrow-down mr-1"></i>
                         -8% vs yesterday
                     </div>
                 </div>
@@ -98,238 +113,408 @@
     </div>
 </div>
 
-<!-- System Status Section -->
-<div class="dashboard-section">
-    <div class="section-header">
-        <h2 class="section-title">System Status</h2>
-    </div>
-    
-    <div class="status-grid">
-        <div class="status-item">
-            <div class="status-indicator online"></div>
-            <div class="status-text">WAF Engine</div>
-            <div class="badge badge-success">Online</div>
-        </div>
-        <div class="status-item">
-            <div class="status-indicator online"></div>
-            <div class="status-text">Database</div>
-            <div class="badge badge-success">Online</div>
-        </div>
-        <div class="status-item">
-            <div class="status-indicator online"></div>
-            <div class="status-text">Proxy Service</div>
-            <div class="badge badge-success">Online</div>
-        </div>
-        <div class="status-item">
-            <div class="status-indicator warning"></div>
-            <div class="status-text">Backup System</div>
-            <div class="badge badge-warning">Warning</div>
-        </div>
-    </div>
-</div>
-
-<!-- Recent Activity Section -->
-<div class="dashboard-section">
-    <div class="dashboard-grid cols-2">
-        <!-- Top Blocked Rules -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="section-title">Top Blocked Rules</h3>
+<!-- Main Dashboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column - Charts and Activity -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- System Status -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-server mr-3 text-green-600"></i>
+                    System Status
+                </h3>
             </div>
-            <div class="card-body">
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                            <span class="font-medium text-cf-900">WAF Engine</span>
+                        </div>
+                        <span class="text-green-600 font-medium">Online</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                            <span class="font-medium text-cf-900">Database</span>
+                        </div>
+                        <span class="text-green-600 font-medium">Online</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                            <span class="font-medium text-cf-900">Proxy Service</span>
+                        </div>
+                        <span class="text-green-600 font-medium">Online</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-yellow-400 rounded-full mr-3"></div>
+                            <span class="font-medium text-cf-900">Backup System</span>
+                        </div>
+                        <span class="text-yellow-600 font-medium">Warning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Blocked Rules -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-chart-bar mr-3 text-red-600"></i>
+                    Top Security Triggers
+                </h3>
+            </div>
+            <div class="p-6">
                 {% if top_blocked_rules %}
-                    <div class="rule-list">
+                    <div class="space-y-4">
                         {% for rule in top_blocked_rules %}
-                            <div class="rule-item">
-                                <div class="rule-info">
-                                    <div class="rule-name">{{ rule.rule_matched__name|default:"Unknown Rule" }}</div>
-                                    <div class="rule-count">{{ rule.count }} blocks</div>
-                                </div>
-                                <div class="rule-progress">
-                                    <div class="rule-bar" style="width: {{ rule.count|add:0|mul:10 }}%"></div>
+                        <div class="flex items-center justify-between p-4 bg-cf-50 rounded-lg border border-cf-200">
+                            <div class="flex-1">
+                                <div class="font-medium text-cf-900">{{ rule.rule_matched__name|default:"Unknown Rule" }}</div>
+                                <div class="text-sm text-cf-600">{{ rule.count }} blocks today</div>
+                            </div>
+                            <div class="w-24">
+                                <div class="w-full bg-cf-200 rounded-full h-2">
+                                    <div class="bg-red-600 h-2 rounded-full transition-all duration-500" style="width: {{ rule.count|add:0|mul:10 }}%"></div>
                                 </div>
                             </div>
+                        </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-shield-check"></i>
-                        <p>No blocked requests today</p>
+                    <div class="text-center py-8">
+                        <i class="fas fa-shield-check text-green-400 text-4xl mb-4"></i>
+                        <h4 class="text-lg font-medium text-cf-900 mb-2">All Clear!</h4>
+                        <p class="text-cf-600">No security threats detected today</p>
                     </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Quick Info -->
+    <div class="space-y-6">
+        <!-- Quick Actions -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-bolt mr-3 text-yellow-600"></i>
+                    Quick Actions
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <button onclick="openModal('addRuleModal')" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-shield-plus mr-2"></i>
+                    Create Security Rule
+                </button>
+                <a href="{% url 'customer_list' %}" class="w-full bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-users mr-2"></i>
+                    Manage Customers
+                </a>
+                <a href="{% url 'system_status' %}" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-diagnostics mr-2"></i>
+                    System Health
+                </a>
+                <button onclick="openModal('maintenanceModal')" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-tools mr-2"></i>
+                    Maintenance Mode
+                </button>
             </div>
         </div>
 
         <!-- Recent Activity -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="section-title">Recent Activity</h3>
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-history mr-3 text-blue-600"></i>
+                    Recent Activity
+                </h3>
             </div>
-            <div class="card-body">
+            <div class="p-6">
                 {% if recent_logs %}
-                    <div class="activity-list">
-                        {% for log in recent_logs %}
-                            <div class="activity-item">
-                                <div class="activity-icon">
-                                    {% if log.status == 'BLOCKED' %}
-                                        <i class="fas fa-ban" style="color: var(--error-red);"></i>
-                                    {% elif log.status == 'RATE_LIMITED' %}
-                                        <i class="fas fa-clock" style="color: var(--warning-yellow);"></i>
-                                    {% else %}
-                                        <i class="fas fa-check" style="color: var(--success-green);"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="activity-info">
-                                    <div class="activity-title">{{ log.url|truncatechars:50 }}</div>
-                                    <div class="activity-meta">
-                                        {{ log.site.domain }} • {{ log.ip_address }} • {{ log.timestamp|timesince }} ago
-                                    </div>
-                                </div>
-                                <div class="activity-status">
-                                    <span class="badge badge-{% if log.status == 'BLOCKED' %}danger{% elif log.status == 'RATE_LIMITED' %}warning{% else %}success{% endif %}">
-                                        {{ log.status }}
-                                    </span>
-                                </div>
+                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                        {% for log in recent_logs|slice:":8" %}
+                        <div class="flex items-center space-x-3 p-3 bg-cf-50 rounded-lg">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center {% if log.status == 'BLOCKED' %}bg-red-100{% elif log.status == 'RATE_LIMITED' %}bg-yellow-100{% else %}bg-green-100{% endif %}">
+                                {% if log.status == 'BLOCKED' %}
+                                    <i class="fas fa-ban text-red-600 text-sm"></i>
+                                {% elif log.status == 'RATE_LIMITED' %}
+                                    <i class="fas fa-clock text-yellow-600 text-sm"></i>
+                                {% else %}
+                                    <i class="fas fa-check text-green-600 text-sm"></i>
+                                {% endif %}
                             </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-medium text-cf-900 truncate">{{ log.site.domain }}</div>
+                                <div class="text-xs text-cf-600">{{ log.ip_address }} • {{ log.timestamp|timesince }} ago</div>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if log.status == 'BLOCKED' %}bg-red-100 text-red-800{% elif log.status == 'RATE_LIMITED' %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ log.status }}
+                            </span>
+                        </div>
                         {% endfor %}
                     </div>
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'log_list' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                            View All Activity <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
                 {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-history"></i>
-                        <p>No recent activity</p>
+                    <div class="text-center py-8">
+                        <i class="fas fa-history text-cf-300 text-4xl mb-4"></i>
+                        <h4 class="text-lg font-medium text-cf-900 mb-2">No Recent Activity</h4>
+                        <p class="text-cf-600">System activity will appear here</p>
                     </div>
                 {% endif %}
+            </div>
+        </div>
+
+        <!-- System Performance -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-tachometer-alt mr-3 text-green-600"></i>
+                    Performance
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">CPU Usage</span>
+                    <span class="text-sm font-medium text-cf-900">23%</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-green-600 h-2 rounded-full" style="width: 23%"></div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">Memory Usage</span>
+                    <span class="text-sm font-medium text-cf-900">45%</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: 45%"></div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">Storage Usage</span>
+                    <span class="text-sm font-medium text-cf-900">67%</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-yellow-600 h-2 rounded-full" style="width: 67%"></div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">Network Load</span>
+                    <span class="text-sm font-medium text-cf-900">12%</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-green-600 h-2 rounded-full" style="width: 12%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Customers and Sites -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Recent Customers -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-user-plus mr-3 text-primary-600"></i>
+                Recent Customers
+            </h3>
+            <a href="{% url 'customer_list' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                View All <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                <!-- This would be populated with actual recent customers -->
+                <div class="flex items-center space-x-3 p-3 bg-cf-50 rounded-lg">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                        JD
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium text-cf-900">john@example.com</div>
+                        <div class="text-sm text-cf-600">2 sites • Joined 3 days ago</div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Active
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recently Added Sites -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-globe mr-3 text-secondary-600"></i>
+                Recently Added Sites
+            </h3>
+            <a href="{% url 'admin_site_list' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                View All <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                <!-- This would be populated with actual recent sites -->
+                <div class="flex items-center space-x-3 p-3 bg-cf-50 rounded-lg">
+                    <div class="w-10 h-10 bg-secondary-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-globe text-secondary-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium text-cf-900">example.com</div>
+                        <div class="text-sm text-cf-600">john@example.com • 2 hours ago</div>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Protected
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+{% block modals %}
+<!-- Add Rule Modal -->
+<div id="addRuleModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-lg mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Create Security Rule</h3>
+            <button onclick="closeModal('addRuleModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <form action="{% url 'rule_add' %}" method="post" class="p-6 space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Rule Name</label>
+                <input type="text" name="name" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="SQL Injection Protection" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Rule Type</label>
+                <select name="rule_type" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
+                    <option value="">Select type...</option>
+                    <option value="sql_injection">SQL Injection</option>
+                    <option value="xss">Cross-Site Scripting</option>
+                    <option value="path_traversal">Path Traversal</option>
+                    <option value="rate_limit">Rate Limiting</option>
+                    <option value="bot_detection">Bot Detection</option>
+                    <option value="custom">Custom Pattern</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Pattern</label>
+                <textarea name="pattern" rows="3" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Enter regex pattern or rule definition" required></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Action</label>
+                <select name="action" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
+                    <option value="BLOCK">Block Request</option>
+                    <option value="LOG">Log Only</option>
+                    <option value="ALLOW">Allow</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Description</label>
+                <textarea name="description" rows="2" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Describe what this rule protects against"></textarea>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" name="is_global" checked class="w-4 h-4 text-primary-600 bg-cf-100 border-cf-300 rounded focus:ring-primary-500 focus:ring-2">
+                <label class="ml-2 text-sm text-cf-900">Make this rule available to all customers</label>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-4">
+                <button type="button" onclick="closeModal('addRuleModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    Create Rule
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Maintenance Modal -->
+<div id="maintenanceModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Maintenance Mode</h3>
+            <button onclick="closeModal('maintenanceModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div class="flex">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-3 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-yellow-800">Maintenance Mode</h4>
+                        <p class="text-sm text-yellow-700 mt-1">This will put the entire WAF system into maintenance mode, affecting all customers.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-3">
+                <label class="flex items-center p-3 border border-cf-300 rounded-lg hover:bg-cf-50 cursor-pointer">
+                    <input type="radio" name="maintenance_type" value="full" class="text-primary-600">
+                    <div class="ml-3">
+                        <div class="font-medium text-cf-900">Full Maintenance</div>
+                        <div class="text-sm text-cf-500">Block all traffic</div>
+                    </div>
+                </label>
+                <label class="flex items-center p-3 border border-cf-300 rounded-lg hover:bg-cf-50 cursor-pointer">
+                    <input type="radio" name="maintenance_type" value="partial" class="text-primary-600" checked>
+                    <div class="ml-3">
+                        <div class="font-medium text-cf-900">Partial Maintenance</div>
+                        <div class="text-sm text-cf-500">Allow existing traffic</div>
+                    </div>
+                </label>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-6">
+                <button onclick="closeModal('maintenanceModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button onclick="enableMaintenance()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors duration-200">
+                    Enable Maintenance
+                </button>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-/* Rule List Styles */
-.rule-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-4);
+<script>
+function exportSystemData() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Exporting...';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        alert('System data exported successfully!');
+    }, 2000);
 }
 
-.rule-item {
-    padding: var(--spacing-4);
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
+function enableMaintenance() {
+    const type = document.querySelector('input[name="maintenance_type"]:checked').value;
+    
+    if (confirm(`Are you sure you want to enable ${type} maintenance mode?`)) {
+        closeModal('maintenanceModal');
+        alert(`${type.charAt(0).toUpperCase() + type.slice(1)} maintenance mode enabled.`);
+    }
 }
-
-.rule-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-2);
-}
-
-.rule-name {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.rule-count {
-    color: var(--text-secondary);
-    font-size: 12px;
-}
-
-.rule-progress {
-    height: 4px;
-    background-color: var(--border-color);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.rule-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-orange), var(--error-red));
-    transition: width 0.3s ease;
-}
-
-/* Activity List Styles */
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-4);
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-3);
-    padding: var(--spacing-3);
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    transition: all 0.2s ease;
-}
-
-.activity-item:hover {
-    background-color: var(--bg-tertiary);
-}
-
-.activity-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: var(--bg-primary);
-    font-size: 14px;
-}
-
-.activity-info {
-    flex: 1;
-}
-
-.activity-title {
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-1);
-    font-size: 14px;
-}
-
-.activity-meta {
-    color: var(--text-secondary);
-    font-size: 12px;
-}
-
-.activity-status {
-    display: flex;
-    align-items: center;
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: var(--spacing-8) var(--spacing-4);
-    color: var(--text-muted);
-}
-
-.empty-state i {
-    font-size: 32px;
-    margin-bottom: var(--spacing-4);
-    opacity: 0.5;
-}
-
-.empty-state p {
-    margin-bottom: 0;
-    font-size: 14px;
-}
-
-/* Enhanced status grid */
-.status-item {
-    justify-content: space-between;
-}
-
-.status-item .badge {
-    margin-left: auto;
-}
-</style>
+</script>
 {% endblock %}

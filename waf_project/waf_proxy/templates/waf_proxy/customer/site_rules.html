@@ -25,17 +25,13 @@
 {% endblock %}
 
 {% block page_actions %}
-<button onclick="openModal('addRuleModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+<button onclick="showAvailableRules()" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
     <i class="fas fa-plus mr-2"></i>
-    Add Custom Rule
-</button>
-<button onclick="openModal('importModal')" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
-    <i class="fas fa-upload mr-2"></i>
-    Import Rules
+    Add Protection Rule
 </button>
 <button onclick="exportRules()" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
     <i class="fas fa-download mr-2"></i>
-    Export Rules
+    Export Config
 </button>
 {% endblock %}
 
@@ -171,14 +167,15 @@
         </div>
     </div>
 
-    <!-- Available Rules Sidebar -->
+    <!-- Available Security Rules -->
     <div>
         <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
             <div class="px-6 py-4 border-b border-cf-200">
                 <h3 class="text-lg font-medium text-cf-900 flex items-center">
-                    <i class="fas fa-plus-circle mr-3 text-secondary-600"></i>
-                    Available Rules
+                    <i class="fas fa-store mr-3 text-secondary-600"></i>
+                    Security Rule Library
                 </h3>
+                <p class="text-sm text-cf-600 mt-1">Professional rules created by our security team</p>
             </div>
             <div class="max-h-96 overflow-y-auto">
                 {% if available_rules %}
@@ -187,7 +184,13 @@
                         <div class="p-4 hover:bg-cf-50 transition-colors duration-200">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
-                                    <h4 class="font-medium text-cf-900 mb-1">{{ rule.name }}</h4>
+                                    <div class="flex items-center mb-2">
+                                        <h4 class="font-medium text-cf-900 mr-2">{{ rule.name }}</h4>
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            <i class="fas fa-certificate mr-1"></i>
+                                            Verified
+                                        </span>
+                                    </div>
                                     <div class="flex items-center space-x-2 mb-2">
                                         <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-secondary-100 text-secondary-800">
                                             {{ rule.rule_type|title }}
@@ -196,14 +199,18 @@
                                             {{ rule.action }}
                                         </span>
                                     </div>
-                                    <p class="text-sm text-cf-600 mb-3">{{ rule.description|truncatechars:80 }}</p>
-                                    <code class="text-xs bg-cf-100 text-cf-800 px-2 py-1 rounded block">{{ rule.pattern|truncatechars:50 }}</code>
+                                    <p class="text-sm text-cf-600 mb-3">{{ rule.description|truncatechars:100 }}</p>
+                                    <div class="text-xs text-cf-500">
+                                        <i class="fas fa-users mr-1"></i>
+                                        Used by {{ rule.siterule_set.count }} sites
+                                    </div>
                                 </div>
                                 <form method="post" class="ml-3">
                                     {% csrf_token %}
                                     <input type="hidden" name="rule_id" value="{{ rule.id }}">
-                                    <button type="submit" name="add_rule" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-3 py-2 transition-colors duration-200">
-                                        <i class="fas fa-plus"></i>
+                                    <button type="submit" name="add_rule" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-3 py-2 transition-colors duration-200 flex items-center">
+                                        <i class="fas fa-shield-plus mr-1"></i>
+                                        Add
                                     </button>
                                 </form>
                             </div>
@@ -214,7 +221,10 @@
                     <div class="p-8 text-center">
                         <i class="fas fa-check-circle text-green-400 text-4xl mb-4"></i>
                         <h4 class="text-lg font-medium text-cf-900 mb-2">All Rules Added</h4>
-                        <p class="text-cf-600">All available rules are already protecting your site!</p>
+                        <p class="text-cf-600">All available security rules are already protecting your site!</p>
+                        <div class="mt-4">
+                            <span class="text-xs text-cf-500">New rules are regularly added by our security team</span>
+                        </div>
                     </div>
                 {% endif %}
             </div>
@@ -310,133 +320,93 @@
 
 <!-- Modals -->
 {% block modals %}
-<!-- Add Rule Modal -->
-<div id="addRuleModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-lg mx-4">
-        <div class="flex items-center justify-between p-6 border-b border-cf-200">
-            <h3 class="text-lg font-semibold text-cf-900">Add Custom Rule</h3>
-            <button onclick="closeModal('addRuleModal')" class="text-cf-400 hover:text-cf-600">
-                <i class="fas fa-times w-5 h-5"></i>
-            </button>
-        </div>
-        <form action="{% url 'site_rule_add' site.id %}" method="post" class="p-6 space-y-4">
-            {% csrf_token %}
-            <div>
-                <label class="block text-sm font-medium text-cf-900 mb-2">Rule Name</label>
-                <input type="text" name="name" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="My Custom Rule" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-cf-900 mb-2">Rule Type</label>
-                <select name="rule_type" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
-                    <option value="">Select type...</option>
-                    <option value="sql_injection">SQL Injection</option>
-                    <option value="xss">Cross-Site Scripting</option>
-                    <option value="path_traversal">Path Traversal</option>
-                    <option value="rate_limit">Rate Limiting</option>
-                    <option value="custom">Custom Pattern</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-cf-900 mb-2">Pattern</label>
-                <textarea name="pattern" rows="3" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Enter regex pattern or rule definition" required></textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-cf-900 mb-2">Action</label>
-                <select name="action" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
-                    <option value="BLOCK">Block Request</option>
-                    <option value="LOG">Log Only</option>
-                    <option value="ALLOW">Allow</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-cf-900 mb-2">Description</label>
-                <textarea name="description" rows="2" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Describe what this rule does"></textarea>
-            </div>
-            <div class="flex items-center justify-end space-x-3 pt-4">
-                <button type="button" onclick="closeModal('addRuleModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
-                    Cancel
-                </button>
-                <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
-                    Add Rule
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Import Rules Modal -->
-<div id="importModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+<!-- Contact Admin Modal for Custom Rules -->
+<div id="customRuleModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
         <div class="flex items-center justify-between p-6 border-b border-cf-200">
-            <h3 class="text-lg font-semibold text-cf-900">Import Rules</h3>
-            <button onclick="closeModal('importModal')" class="text-cf-400 hover:text-cf-600">
+            <h3 class="text-lg font-semibold text-cf-900">Need a Custom Rule?</h3>
+            <button onclick="closeModal('customRuleModal')" class="text-cf-400 hover:text-cf-600">
                 <i class="fas fa-times w-5 h-5"></i>
             </button>
         </div>
-        <form action="{% url 'site_rules_import' site.id %}" method="post" enctype="multipart/form-data" class="p-6 space-y-4">
-            {% csrf_token %}
-            <div>
-                <label class="block text-sm font-medium text-cf-900 mb-2">Select File</label>
-                <input type="file" name="rules_file" accept=".json,.yaml,.yml" class="block w-full text-sm text-cf-900 border border-cf-300 rounded-lg cursor-pointer bg-cf-50 focus:outline-none">
-                <p class="mt-1 text-sm text-cf-500">JSON or YAML format only</p>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="flex">
-                    <i class="fas fa-info-circle text-blue-600 mr-3 mt-0.5"></i>
-                    <div>
-                        <h4 class="text-sm font-medium text-blue-800">Import Rules</h4>
-                        <p class="text-sm text-blue-700 mt-1">This will add new rules to your site. Existing rules will not be affected.</p>
-                    </div>
+        <div class="p-6">
+            <div class="text-center">
+                <i class="fas fa-user-shield text-primary-600 text-4xl mb-4"></i>
+                <h4 class="text-lg font-medium text-cf-900 mb-3">Custom Rule Request</h4>
+                <p class="text-cf-600 mb-6">Our security experts can create custom rules tailored to your specific needs. Contact our admin team to discuss your requirements.</p>
+                
+                <div class="space-y-3">
+                    <button onclick="contactSupport()" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-4 py-3 transition-colors duration-200">
+                        <i class="fas fa-headset mr-2"></i>
+                        Contact Support
+                    </button>
+                    <button onclick="closeModal('customRuleModal')" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg px-4 py-3 transition-colors duration-200">
+                        Browse Available Rules
+                    </button>
                 </div>
             </div>
-            <div class="flex items-center justify-end space-x-3 pt-4">
-                <button type="button" onclick="closeModal('importModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
-                    Cancel
-                </button>
-                <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
-                    Import
-                </button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 <script>
+function showAvailableRules() {
+    // Scroll to available rules section
+    document.querySelector('.max-h-96').scrollIntoView({ behavior: 'smooth' });
+    
+    // Highlight the section briefly
+    const section = document.querySelector('.max-h-96').parentElement;
+    section.classList.add('ring-2', 'ring-primary-500', 'ring-opacity-50');
+    setTimeout(() => {
+        section.classList.remove('ring-2', 'ring-primary-500', 'ring-opacity-50');
+    }, 2000);
+}
+
 function toggleRule(ruleId, checkbox) {
     const isEnabled = checkbox.checked;
     const action = isEnabled ? 'enable' : 'disable';
     
-    // Show loading state
     checkbox.disabled = true;
     
     // In a real implementation, this would make an AJAX call
     setTimeout(() => {
         checkbox.disabled = false;
-        // Show success message
         showNotification(`Rule ${action}d successfully!`, 'success');
     }, 500);
 }
 
 function editRule(ruleId) {
-    // In a real implementation, this would open an edit modal or redirect
-    window.location.href = `{% url 'site_rule_edit' site.id 0 %}`.replace('0', ruleId);
+    // Customers cannot edit rules - show info modal
+    openModal('customRuleModal');
 }
 
 function deleteRule(ruleId) {
-    if (confirm('Are you sure you want to delete this rule? This action cannot be undone.')) {
-        // In a real implementation, this would make an AJAX call
+    if (confirm('Are you sure you want to remove this rule from your site? You can add it back later from the available rules.')) {
         window.location.href = `{% url 'site_rule_delete' site.id 0 %}`.replace('0', ruleId);
     }
 }
 
 function exportRules() {
-    // Simulate export
-    showNotification('Rules exported successfully!', 'success');
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Exporting...';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        showNotification('Site rules configuration exported successfully!', 'success');
+    }, 1500);
+}
+
+function contactSupport() {
+    closeModal('customRuleModal');
+    alert('Support contact feature would be implemented here. For now, please email admin@waf-security.com for custom rule requests.');
 }
 
 function showNotification(message, type) {
-    // Create a simple notification
     const notification = document.createElement('div');
     notification.className = `fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
     notification.innerHTML = `

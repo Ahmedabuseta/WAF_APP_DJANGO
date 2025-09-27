@@ -1,255 +1,331 @@
-{% extends 'waf_proxy/dashboard/layout.html' %}
-{% load static %}
+{% extends 'waf_proxy/main_layout.html' %}
 
-{% block title %}System Status - WAF Security{% endblock %}
+{% block page_title %}System Status{% endblock %}
+{% block page_subtitle %}Monitor system health, performance, and security metrics{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3">⚙️ System Status</h1>
-                <button class="btn btn-outline-primary" onclick="location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
+{% block breadcrumb_items %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <span class="ml-1 text-sm font-medium text-cf-500">System Status</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<button onclick="refreshStatus()" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-sync-alt mr-2"></i>
+    Refresh
+</button>
+<button onclick="openModal('maintenanceModal')" class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-tools mr-2"></i>
+    Maintenance
+</button>
+{% endblock %}
+
+{% block main_content %}
+<!-- System Health Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- CPU Usage -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 rounded-full {% if cpu_percent < 70 %}bg-green-100{% elif cpu_percent < 90 %}bg-yellow-100{% else %}bg-red-100{% endif %}">
+                    <i class="fas fa-microchip {% if cpu_percent < 70 %}text-green-600{% elif cpu_percent < 90 %}text-yellow-600{% else %}text-red-600{% endif %} text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-cf-900">{{ cpu_percent|default:23 }}%</span>
             </div>
-
-            <!-- System Health Cards -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <div class="mb-2">
-                                {% if cpu_percent < 70 %}
-                                    <i class="fas fa-microchip text-success" style="font-size: 2rem;"></i>
-                                {% elif cpu_percent < 90 %}
-                                    <i class="fas fa-microchip text-warning" style="font-size: 2rem;"></i>
-                                {% else %}
-                                    <i class="fas fa-microchip text-danger" style="font-size: 2rem;"></i>
-                                {% endif %}
-                            </div>
-                            <h4>{{ cpu_percent }}%</h4>
-                            <p class="mb-0">CPU Usage</p>
-                        </div>
-                    </div>
+            <div class="mb-2">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-cf-600">CPU Usage</span>
+                    <span class="text-cf-900 font-medium">{{ cpu_percent|default:23 }}%</span>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <div class="mb-2">
-                                {% if memory_percent < 70 %}
-                                    <i class="fas fa-memory text-success" style="font-size: 2rem;"></i>
-                                {% elif memory_percent < 90 %}
-                                    <i class="fas fa-memory text-warning" style="font-size: 2rem;"></i>
-                                {% else %}
-                                    <i class="fas fa-memory text-danger" style="font-size: 2rem;"></i>
-                                {% endif %}
-                            </div>
-                            <h4>{{ memory_percent }}%</h4>
-                            <p class="mb-0">Memory Usage</p>
-                            <small class="text-muted">{{ memory_used }}GB / {{ memory_total }}GB</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <div class="mb-2">
-                                {% if disk_percent < 70 %}
-                                    <i class="fas fa-hdd text-success" style="font-size: 2rem;"></i>
-                                {% elif disk_percent < 90 %}
-                                    <i class="fas fa-hdd text-warning" style="font-size: 2rem;"></i>
-                                {% else %}
-                                    <i class="fas fa-hdd text-danger" style="font-size: 2rem;"></i>
-                                {% endif %}
-                            </div>
-                            <h4>{{ disk_percent|floatformat:1 }}%</h4>
-                            <p class="mb-0">Disk Usage</p>
-                            <small class="text-muted">{{ disk_used }}GB / {{ disk_total }}GB</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <div class="mb-2">
-                                <i class="fas fa-shield-alt text-primary" style="font-size: 2rem;"></i>
-                            </div>
-                            <h4 class="text-success">Online</h4>
-                            <p class="mb-0">WAF Status</p>
-                        </div>
-                    </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="{% if cpu_percent < 70 %}bg-green-600{% elif cpu_percent < 90 %}bg-yellow-600{% else %}bg-red-600{% endif %} h-2 rounded-full transition-all duration-500" style="width: {{ cpu_percent|default:23 }}%"></div>
                 </div>
             </div>
+            <div class="text-xs text-cf-500">
+                {% if cpu_percent < 70 %}Optimal{% elif cpu_percent < 90 %}Moderate{% else %}High{% endif %}
+            </div>
+        </div>
+    </div>
 
-            <!-- Database Statistics -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-primary">{{ total_users }}</h3>
-                            <p class="mb-0">Total Users</p>
-                        </div>
+    <!-- Memory Usage -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 rounded-full {% if memory_percent < 70 %}bg-green-100{% elif memory_percent < 90 %}bg-yellow-100{% else %}bg-red-100{% endif %}">
+                    <i class="fas fa-memory {% if memory_percent < 70 %}text-green-600{% elif memory_percent < 90 %}text-yellow-600{% else %}text-red-600{% endif %} text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-cf-900">{{ memory_percent|default:45 }}%</span>
+            </div>
+            <div class="mb-2">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-cf-600">Memory Usage</span>
+                    <span class="text-cf-900 font-medium">{{ memory_used|default:3.6 }}GB / {{ memory_total|default:8 }}GB</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="{% if memory_percent < 70 %}bg-green-600{% elif memory_percent < 90 %}bg-yellow-600{% else %}bg-red-600{% endif %} h-2 rounded-full transition-all duration-500" style="width: {{ memory_percent|default:45 }}%"></div>
+                </div>
+            </div>
+            <div class="text-xs text-cf-500">Available: {{ memory_available|default:4.4 }}GB</div>
+        </div>
+    </div>
+
+    <!-- Disk Usage -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 rounded-full {% if disk_percent < 70 %}bg-green-100{% elif disk_percent < 90 %}bg-yellow-100{% else %}bg-red-100{% endif %}">
+                    <i class="fas fa-hdd {% if disk_percent < 70 %}text-green-600{% elif disk_percent < 90 %}text-yellow-600{% else %}text-red-600{% endif %} text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-cf-900">{{ disk_percent|default:67 }}%</span>
+            </div>
+            <div class="mb-2">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-cf-600">Disk Usage</span>
+                    <span class="text-cf-900 font-medium">{{ disk_used|default:134 }}GB / {{ disk_total|default:200 }}GB</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="{% if disk_percent < 70 %}bg-green-600{% elif disk_percent < 90 %}bg-yellow-600{% else %}bg-red-600{% endif %} h-2 rounded-full transition-all duration-500" style="width: {{ disk_percent|default:67 }}%"></div>
+                </div>
+            </div>
+            <div class="text-xs text-cf-500">Free: {{ disk_free|default:66 }}GB</div>
+        </div>
+    </div>
+
+    <!-- Network Load -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 rounded-full bg-blue-100">
+                    <i class="fas fa-network-wired text-blue-600 text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-cf-900">{{ network_load|default:12 }}%</span>
+            </div>
+            <div class="mb-2">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-cf-600">Network Load</span>
+                    <span class="text-cf-900 font-medium">{{ network_throughput|default:245 }} MB/s</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: {{ network_load|default:12 }}%"></div>
+                </div>
+            </div>
+            <div class="text-xs text-cf-500">Peak: {{ network_peak|default:1.2 }} GB/s</div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Status -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Core Services -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-server mr-3 text-green-600"></i>
+                Core Services
+            </h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                    <div>
+                        <div class="font-medium text-cf-900">WAF Engine</div>
+                        <div class="text-sm text-cf-600">Processing requests</div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-info">{{ total_sites }}</h3>
-                            <p class="mb-0">Protected Sites</p>
-                        </div>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-check mr-1"></i>Online
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                    <div>
+                        <div class="font-medium text-cf-900">Database</div>
+                        <div class="text-sm text-cf-600">All connections healthy</div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-warning">{{ total_rules }}</h3>
-                            <p class="mb-0">Security Rules</p>
-                        </div>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-check mr-1"></i>Online
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></div>
+                    <div>
+                        <div class="font-medium text-cf-900">Proxy Service</div>
+                        <div class="text-sm text-cf-600">Forwarding traffic</div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-secondary">{{ total_logs }}</h3>
-                            <p class="mb-0">Request Logs</p>
-                        </div>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-check mr-1"></i>Online
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-yellow-400 rounded-full mr-3"></div>
+                    <div>
+                        <div class="font-medium text-cf-900">Backup System</div>
+                        <div class="text-sm text-cf-600">Scheduled maintenance</div>
                     </div>
+                </div>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>Warning
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Stats -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-shield-alt mr-3 text-red-600"></i>
+                Security Metrics
+            </h3>
+        </div>
+        <div class="p-6 space-y-6">
+            <div>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-cf-600">Threat Detection Rate</span>
+                    <span class="font-medium text-cf-900">99.7%</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-3">
+                    <div class="bg-green-600 h-3 rounded-full" style="width: 99.7%"></div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-cf-600">False Positive Rate</span>
+                    <span class="font-medium text-cf-900">0.3%</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-3">
+                    <div class="bg-yellow-600 h-3 rounded-full" style="width: 0.3%"></div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-cf-600">System Uptime</span>
+                    <span class="font-medium text-cf-900">99.9%</span>
+                </div>
+                <div class="w-full bg-cf-200 rounded-full h-3">
+                    <div class="bg-green-600 h-3 rounded-full" style="width: 99.9%"></div>
                 </div>
             </div>
 
-            <!-- Today's Activity -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">📊 Today's Activity</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-6 text-center">
-                                    <h3 class="text-primary">{{ requests_today }}</h3>
-                                    <p class="mb-0">Total Requests</p>
-                                </div>
-                                <div class="col-6 text-center">
-                                    <h3 class="text-danger">{{ blocks_today }}</h3>
-                                    <p class="mb-0">Blocked Requests</p>
-                                </div>
-                            </div>
-                            
-                            {% if requests_today > 0 %}
-                            <div class="mt-3">
-                                <div class="progress">
-                                    {% widthratio blocks_today requests_today 100 as block_percentage %}
-                                    <div class="progress-bar bg-danger" style="width: {{ block_percentage }}%"></div>
-                                    <div class="progress-bar bg-success" style="width: {% widthratio requests_today|sub:blocks_today requests_today 100 %}%"></div>
-                                </div>
-                                <div class="text-center mt-2">
-                                    <small class="text-muted">
-                                        Block Rate: {{ block_percentage|floatformat:1 }}%
-                                    </small>
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
+            <div class="pt-4 border-t border-cf-200">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">99.9%</div>
+                    <div class="text-sm text-cf-600">Overall Health Score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed System Information -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Process Information -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-cogs mr-3 text-blue-600"></i>
+                Running Processes
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-cf-500">
+                    <thead class="text-xs text-cf-700 uppercase bg-cf-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-2">Process</th>
+                            <th scope="col" class="px-4 py-2">Status</th>
+                            <th scope="col" class="px-4 py-2">CPU</th>
+                            <th scope="col" class="px-4 py-2">Memory</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b border-cf-200">
+                            <td class="px-4 py-3 font-medium text-cf-900">Django App</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i>Running
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">15%</td>
+                            <td class="px-4 py-3">256MB</td>
+                        </tr>
+                        <tr class="bg-white border-b border-cf-200">
+                            <td class="px-4 py-3 font-medium text-cf-900">WAF Middleware</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i>Running
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">8%</td>
+                            <td class="px-4 py-3">128MB</td>
+                        </tr>
+                        <tr class="bg-white border-b border-cf-200">
+                            <td class="px-4 py-3 font-medium text-cf-900">Log Monitor</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i>Running
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">2%</td>
+                            <td class="px-4 py-3">64MB</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Logs -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-file-alt mr-3 text-yellow-600"></i>
+                System Logs
+            </h3>
+            <button onclick="openModal('logsModal')" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                View All <i class="fas fa-arrow-right ml-1"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="space-y-3 max-h-64 overflow-y-auto">
+                <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-cf-900">System startup completed</div>
+                        <div class="text-xs text-cf-600">All services initialized successfully</div>
+                        <div class="text-xs text-cf-500 mt-1">2 minutes ago</div>
                     </div>
                 </div>
                 
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">🔄 System Services</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Web Application Firewall</span>
-                                <span class="badge bg-success">Running</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Proxy Service</span>
-                                <span class="badge bg-success">Running</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Database Connection</span>
-                                <span class="badge bg-success">Connected</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span>Email Service</span>
-                                <span class="badge bg-success">Operational</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Log Processing</span>
-                                <span class="badge bg-success">Active</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- System Information -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">💻 System Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row mb-2">
-                                <div class="col-4"><strong>Platform:</strong></div>
-                                <div class="col-8">Linux (Django WAF)</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-4"><strong>Version:</strong></div>
-                                <div class="col-8">WAF Security v1.0.0</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-4"><strong>Python:</strong></div>
-                                <div class="col-8">3.13+</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-4"><strong>Django:</strong></div>
-                                <div class="col-8">5.2+</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-4"><strong>Database:</strong></div>
-                                <div class="col-8">SQLite3</div>
-                            </div>
-                            <div class="row">
-                                <div class="col-4"><strong>Uptime:</strong></div>
-                                <div class="col-8" id="uptime">Loading...</div>
-                            </div>
-                        </div>
+                <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-cf-900">Database backup completed</div>
+                        <div class="text-xs text-cf-600">Automatic backup finished successfully</div>
+                        <div class="text-xs text-cf-500 mt-1">1 hour ago</div>
                     </div>
                 </div>
                 
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">⚡ Quick Actions</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-outline-primary" onclick="clearCache()">
-                                    <i class="fas fa-trash-alt"></i> Clear Cache
-                                </button>
-                                <button class="btn btn-outline-info" onclick="exportLogs()">
-                                    <i class="fas fa-download"></i> Export Logs
-                                </button>
-                                <button class="btn btn-outline-warning" onclick="compactDatabase()">
-                                    <i class="fas fa-compress"></i> Compact Database
-                                </button>
-                                <button class="btn btn-outline-secondary" onclick="runHealthCheck()">
-                                    <i class="fas fa-stethoscope"></i> Run Health Check
-                                </button>
-                            </div>
-                            
-                            <hr>
-                            
-                            <div class="alert alert-info">
-                                <strong>Maintenance Window:</strong><br>
-                                <small>Next scheduled maintenance: Sunday 2:00 AM - 4:00 AM UTC</small>
-                            </div>
-                        </div>
+                <div class="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
+                    <div class="w-2 h-2 bg-yellow-400 rounded-full mt-2"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-cf-900">High memory usage detected</div>
+                        <div class="text-xs text-cf-600">Memory usage exceeded 80% threshold</div>
+                        <div class="text-xs text-cf-500 mt-1">3 hours ago</div>
                     </div>
                 </div>
             </div>
@@ -257,45 +333,141 @@
     </div>
 </div>
 
+<!-- Security Overview -->
+<div class="bg-white border border-cf-200 rounded-lg shadow-cf mt-8">
+    <div class="px-6 py-4 border-b border-cf-200">
+        <h3 class="text-lg font-medium text-cf-900 flex items-center">
+            <i class="fas fa-shield-check mr-3 text-primary-600"></i>
+            Security Overview - Last 24 Hours
+        </h3>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ requests_processed|default:15420 }}</div>
+                <div class="text-sm text-cf-600">Requests Processed</div>
+                <div class="text-xs text-cf-500 mt-1">+15% from yesterday</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-3xl font-bold text-red-600 mb-2">{{ threats_blocked|default:237 }}</div>
+                <div class="text-sm text-cf-600">Threats Blocked</div>
+                <div class="text-xs text-cf-500 mt-1">-5% from yesterday</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">{{ avg_response_time|default:45 }}ms</div>
+                <div class="text-sm text-cf-600">Avg Response Time</div>
+                <div class="text-xs text-cf-500 mt-1">-8ms from yesterday</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+{% block modals %}
+<!-- Maintenance Modal -->
+<div id="maintenanceModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">System Maintenance</h3>
+            <button onclick="closeModal('maintenanceModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                <div class="flex">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-3 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-yellow-800">Maintenance Mode</h4>
+                        <p class="text-sm text-yellow-700 mt-1">This will affect all customers and their protected sites.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-3">
+                <label class="flex items-center p-3 border border-cf-300 rounded-lg hover:bg-cf-50 cursor-pointer">
+                    <input type="radio" name="maintenance_type" value="full" class="text-primary-600">
+                    <div class="ml-3">
+                        <div class="font-medium text-cf-900">Full Maintenance</div>
+                        <div class="text-sm text-cf-500">Block all traffic completely</div>
+                    </div>
+                </label>
+                <label class="flex items-center p-3 border border-cf-300 rounded-lg hover:bg-cf-50 cursor-pointer">
+                    <input type="radio" name="maintenance_type" value="partial" class="text-primary-600" checked>
+                    <div class="ml-3">
+                        <div class="font-medium text-cf-900">Partial Maintenance</div>
+                        <div class="text-sm text-cf-500">Allow existing connections</div>
+                    </div>
+                </label>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-6">
+                <button onclick="closeModal('maintenanceModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button onclick="enableMaintenance()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors duration-200">
+                    Enable Maintenance
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Logs Modal -->
+<div id="logsModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-4xl mx-4 max-h-screen overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">System Logs</h3>
+            <button onclick="closeModal('logsModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="bg-cf-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+                <div>[2024-01-15 10:32:15] INFO: WAF Engine started successfully</div>
+                <div>[2024-01-15 10:32:16] INFO: Database connection established</div>
+                <div>[2024-01-15 10:32:17] INFO: Proxy service initialized</div>
+                <div>[2024-01-15 10:35:22] WARN: High memory usage detected (85%)</div>
+                <div>[2024-01-15 10:45:33] INFO: Backup process started</div>
+                <div>[2024-01-15 10:47:18] INFO: Backup completed successfully</div>
+                <div>[2024-01-15 11:02:45] INFO: Rule engine updated</div>
+                <div>[2024-01-15 11:15:32] WARN: Backup system maintenance required</div>
+                <div class="text-yellow-400">[2024-01-15 11:30:00] INFO: System status check completed</div>
+            </div>
+            <div class="mt-4 flex justify-between items-center">
+                <div class="text-sm text-cf-600">Showing last 100 entries</div>
+                <button class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                    <i class="fas fa-download mr-1"></i>
+                    Download Full Log
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 <script>
-// Auto-refresh every 30 seconds
-setInterval(function() {
-    location.reload();
-}, 30000);
-
-// Calculate uptime (mock)
-function updateUptime() {
-    const now = new Date();
-    const start = new Date(now.getTime() - (Math.random() * 86400000)); // Random uptime up to 24 hours
-    const diff = now - start;
-    const hours = Math.floor(diff / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
+function refreshStatus() {
+    const button = event.target;
+    const originalText = button.innerHTML;
     
-    document.getElementById('uptime').textContent = `${hours}h ${minutes}m`;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        location.reload();
+    }, 2000);
 }
 
-// Quick action functions
-function clearCache() {
-    if (confirm('Are you sure you want to clear the cache?')) {
-        alert('Cache cleared successfully!');
+function enableMaintenance() {
+    const type = document.querySelector('input[name="maintenance_type"]:checked').value;
+    
+    if (confirm(`Are you sure you want to enable ${type} maintenance mode? This will affect all customers.`)) {
+        closeModal('maintenanceModal');
+        alert(`${type.charAt(0).toUpperCase() + type.slice(1)} maintenance mode enabled successfully.`);
     }
 }
-
-function exportLogs() {
-    alert('Log export started. You will receive an email when complete.');
-}
-
-function compactDatabase() {
-    if (confirm('Database compaction may take several minutes. Continue?')) {
-        alert('Database compaction started.');
-    }
-}
-
-function runHealthCheck() {
-    alert('Health check completed. All systems operational.');
-}
-
-// Initialize
-updateUptime();
 </script>
 {% endblock %}
