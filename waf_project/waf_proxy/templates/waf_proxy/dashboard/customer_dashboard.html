@@ -4,62 +4,68 @@
 {% block page_subtitle %}Monitor your protected sites and security metrics{% endblock %}
 
 {% block page_actions %}
-<a href="{% url 'site_list' %}" class="btn btn-primary">
-    <i class="fas fa-plus"></i>
+<a href="{% url 'site_list' %}" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none">
+    <i class="fas fa-plus mr-2"></i>
     Add Site
 </a>
-<a href="#" class="btn btn-secondary">
-    <i class="fas fa-cog"></i>
+<a href="#" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2">
+    <i class="fas fa-cog mr-2"></i>
     Settings
 </a>
 {% endblock %}
 
 {% block dashboard_content %}
 <!-- Quick Stats Section -->
-<div class="dashboard-section">
-    <div class="section-header">
-        <h2 class="section-title">
-            <i class="fas fa-chart-bar"></i>
+<div class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+            <i class="fas fa-chart-bar mr-3 text-primary-600"></i>
             Your Security Overview
         </h2>
     </div>
     
-    <div class="dashboard-grid cols-3">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Total Sites -->
-        <div class="stats-card theme-blue">
-            <div class="stats-content">
-                <div class="stats-icon">
-                    <i class="fas fa-globe"></i>
-                </div>
-                <div class="stats-info">
-                    <div class="stats-value">{{ total_sites }}</div>
-                    <div class="stats-label">Protected Sites</div>
+        <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 mr-4">
+                        <i class="fas fa-globe text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900">{{ total_sites }}</div>
+                        <div class="text-sm text-gray-600">Protected Sites</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Today's Requests -->
-        <div class="stats-card theme-green">
-            <div class="stats-content">
-                <div class="stats-icon">
-                    <i class="fas fa-exchange-alt"></i>
-                </div>
-                <div class="stats-info">
-                    <div class="stats-value">{{ total_requests_today|floatformat:0 }}</div>
-                    <div class="stats-label">Requests Today</div>
+        <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 mr-4">
+                        <i class="fas fa-exchange-alt text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900">{{ total_requests_today|floatformat:0 }}</div>
+                        <div class="text-sm text-gray-600">Requests Today</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Blocked Attacks -->
-        <div class="stats-card theme-red">
-            <div class="stats-content">
-                <div class="stats-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="stats-info">
-                    <div class="stats-value">{{ blocked_today }}</div>
-                    <div class="stats-label">Threats Blocked</div>
+        <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 mr-4">
+                        <i class="fas fa-shield-alt text-red-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900">{{ blocked_today }}</div>
+                        <div class="text-sm text-gray-600">Threats Blocked</div>
+                    </div>
                 </div>
             </div>
         </div>

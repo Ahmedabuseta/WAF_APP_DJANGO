@@ -24,85 +24,87 @@
 
 <!-- Google OAuth Login -->
 {% load socialaccount %}
-<div class="social-login">
-    <a href="{% provider_login_url 'google' %}" class="btn btn-google">
-        <i class="fab fa-google"></i>
+<div class="mb-6">
+    <a href="{% provider_login_url 'google' %}" class="w-full text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 flex items-center justify-center">
+        <i class="fab fa-google mr-3 text-red-500"></i>
         Continue with Google
     </a>
 </div>
 
-<div class="login-divider">
-    <span>or sign in with email</span>
+<div class="flex items-center my-6">
+    <div class="flex-grow border-t border-gray-300"></div>
+    <span class="flex-shrink mx-4 text-gray-400 text-sm">or sign in with email</span>
+    <div class="flex-grow border-t border-gray-300"></div>
 </div>
 
 <!-- Login Form -->
-<form method="post" class="auth-form-content">
+<form method="post" class="space-y-6">
     {% csrf_token %}
     
-    <div class="form-group">
-        <label for="email" class="form-label">
+    <div>
+        <label for="email" class="block mb-2 text-sm font-medium text-gray-900">
             Email Address
         </label>
         <input 
             type="email" 
             id="email" 
             name="email" 
-            class="form-control" 
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5" 
             placeholder="Enter your email"
             required
             autocomplete="email"
         >
     </div>
 
-    <div class="form-group">
-        <label for="password" class="form-label">
+    <div>
+        <label for="password" class="block mb-2 text-sm font-medium text-gray-900">
             Password
         </label>
-        <div class="password-input">
+        <div class="relative">
             <input 
                 type="password" 
                 id="password" 
                 name="password" 
-                class="form-control" 
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 pr-10" 
                 placeholder="Enter your password"
                 required
                 autocomplete="current-password"
             >
-            <button type="button" class="password-toggle" onclick="togglePassword()">
-                <i class="fas fa-eye" id="password-eye"></i>
+            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="togglePassword()">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600" id="password-eye"></i>
             </button>
         </div>
     </div>
 
     <!-- CAPTCHA -->
-    <div class="form-group">
-        <div class="captcha-container">
-            <div class="simple-captcha" id="simple-captcha">
-                <div class="captcha-question">
+    <div>
+        <label class="block mb-2 text-sm font-medium text-gray-900">
+            Security Verification
+        </label>
+        <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div class="flex items-center space-x-3 mb-2">
+                <div class="text-lg font-mono font-bold text-gray-900">
                     <span id="captcha-num1">5</span> + <span id="captcha-num2">3</span> = ?
                 </div>
-                <input type="number" id="captcha-answer" name="captcha_answer" class="form-control" placeholder="Answer" required style="width: 100px;">
-                <button type="button" class="captcha-refresh" onclick="refreshCaptcha()">
+                <input type="number" id="captcha-answer" name="captcha_answer" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-20 p-2" placeholder="Answer" required>
+                <button type="button" class="text-gray-400 hover:text-gray-600 p-2" onclick="refreshCaptcha()">
                     <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
-            <div class="captcha-help">
-                <small>Complete this simple math problem to verify you're human</small>
-            </div>
+            <p class="text-xs text-gray-500">Complete this simple math problem to verify you're human</p>
         </div>
     </div>
 
-    <div class="form-options">
-        <label class="checkbox-label">
-            <input type="checkbox" name="remember_me">
-            <span class="checkmark"></span>
-            Remember me
-        </label>
-        <a href="{% url 'forgot_password' %}" class="auth-link">Forgot password?</a>
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <input id="remember_me" type="checkbox" name="remember_me" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2">
+            <label for="remember_me" class="ml-2 text-sm text-gray-900">Remember me</label>
+        </div>
+        <a href="{% url 'forgot_password' %}" class="text-sm text-primary-600 hover:underline">Forgot password?</a>
     </div>
 
-    <button type="submit" class="btn btn-primary">
-        <i class="fas fa-sign-in-alt"></i>
+    <button type="submit" class="w-full text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+        <i class="fas fa-sign-in-alt mr-2"></i>
         Sign In
     </button>
 </form>
