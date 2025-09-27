@@ -11,6 +11,8 @@ A Django-based Web Application Firewall (WAF) proxy system that provides securit
 - **Site Management**: Multi-site support with individual configurations
 - **Real-time Monitoring**: Request logging and statistics
 - **Email Notifications**: User verification and password reset
+- **Modern UI**: Built with Tailwind CSS and Flowbite components
+- **Responsive Design**: Mobile-first responsive interface
 - **Admin Dashboard**: Comprehensive management interface
 
 ## Project Structure
@@ -63,6 +65,16 @@ A Django-based Web Application Firewall (WAF) proxy system that provides securit
 - Rate limiting
 - Bot detection
 - Custom security rules
+
+## UI Framework
+
+This project uses **Flowbite** components built on **Tailwind CSS** for a modern, responsive user interface:
+
+- **Tailwind CSS**: Utility-first CSS framework for rapid UI development
+- **Flowbite**: Professional UI components library
+- **Responsive Design**: Mobile-first approach with responsive breakpoints
+- **Dark Mode Ready**: Built with dark mode support capabilities
+- **Accessibility**: WCAG compliant components
 
 ## Configuration
 
