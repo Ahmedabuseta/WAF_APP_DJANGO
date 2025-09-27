@@ -1,259 +1,262 @@
-{% extends "waf_proxy/dashboard/layout.html" %}
+{% extends "waf_proxy/main_layout.html" %}
 
 {% block page_title %}My Sites{% endblock %}
 {% block page_subtitle %}Manage your protected websites{% endblock %}
 
-{% block page_actions %}
-<a href="{% url 'site_add' %}" class="btn btn-primary">
-    <i class="fas fa-plus"></i>
-    Add Site
-</a>
+{% block breadcrumb_items %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <span class="ml-1 text-sm font-medium text-cf-500">My Sites</span>
+    </div>
+</li>
 {% endblock %}
 
-{% block dashboard_content %}
-<div class="dashboard-section">
-    {% if sites %}
-        <div class="dashboard-grid cols-2">
-            {% for site in sites %}
-                <div class="site-card card">
-                    <div class="card-header">
-                        <div class="site-header">
-                            <div class="site-icon">
-                                <i class="fas fa-globe"></i>
-                            </div>
-                            <div class="site-info">
-                                <h3 class="site-domain">{{ site.domain }}</h3>
-                                <p class="site-backend">{{ site.backend_url }}</p>
-                            </div>
-                            <div class="site-status">
-                                {% if site.is_active %}
-                                    <span class="badge badge-success">
-                                        <i class="fas fa-check"></i>
-                                        Active
-                                    </span>
-                                {% else %}
-                                    <span class="badge badge-warning">
-                                        <i class="fas fa-pause"></i>
-                                        Inactive
-                                    </span>
-                                {% endif %}
-                            </div>
+{% block page_actions %}
+<button onclick="openModal('addSiteModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-plus mr-2"></i>
+    Add Site
+</button>
+<button onclick="openModal('bulkActionsModal')" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-tasks mr-2"></i>
+    Bulk Actions
+</button>
+{% endblock %}
+
+{% block main_content %}
+<!-- Sites Grid -->
+{% if sites %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for site in sites %}
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-all duration-200 group">
+            <!-- Site Header -->
+            <div class="p-6 border-b border-cf-200">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-secondary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-cf">
+                            <i class="fas fa-globe text-white"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-lg font-medium text-cf-900 truncate">{{ site.domain }}</h3>
+                            <p class="text-sm text-cf-600 font-mono truncate">{{ site.backend_url|truncatechars:30 }}</p>
                         </div>
                     </div>
-                    
-                    <div class="card-body">
-                        <div class="site-stats">
-                            <div class="stat-item">
-                                <div class="stat-value">
-                                    {% with site.requestlog_set.count as req_count %}
-                                        {{ req_count|default:0 }}
-                                    {% endwith %}
-                                </div>
-                                <div class="stat-label">Total Requests</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">
-                                    {% with site.requestlog_set.filter as blocked %}
-                                        0
-                                    {% endwith %}
-                                </div>
-                                <div class="stat-label">Blocked Today</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value">
-                                    {{ site.siterule_set.count|default:0 }}
-                                </div>
-                                <div class="stat-label">Active Rules</div>
-                            </div>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {% if site.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {% if site.is_active %}
+                            <i class="fas fa-check-circle mr-1"></i>Active
+                        {% else %}
+                            <i class="fas fa-pause-circle mr-1"></i>Inactive
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Site Stats -->
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="text-center">
+                        <div class="text-xl font-bold text-cf-900">
+                            {% with site.requestlog_set.count as req_count %}
+                                {{ req_count|default:0 }}
+                            {% endwith %}
                         </div>
+                        <div class="text-sm text-cf-600">Requests</div>
                     </div>
-                    
-                    <div class="card-footer">
-                        <div class="site-actions">
-                            <a href="{% url 'site_rules' site.id %}" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-shield-virus"></i>
-                                Rules
-                            </a>
-                            <a href="{% url 'site_stats' site.id %}" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-chart-line"></i>
-                                Stats
-                            </a>
-                            <a href="{% url 'site_detail' site.id %}" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-eye"></i>
-                                View
-                            </a>
+                    <div class="text-center">
+                        <div class="text-xl font-bold text-cf-900">
+                            {% with site.siterule_set.filter.is_active.count as rule_count %}
+                                {{ rule_count|default:0 }}
+                            {% endwith %}
                         </div>
+                        <div class="text-sm text-cf-600">Rules</div>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state card">
-            <div class="card-body">
-                <div class="empty-content">
-                    <div class="empty-icon">
-                        <i class="fas fa-globe"></i>
-                    </div>
-                    <h3>No Sites Protected Yet</h3>
-                    <p>Add your first website to start protecting it with our advanced WAF</p>
-                    <a href="{% url 'site_add' %}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i>
-                        Add Your First Site
+
+                <!-- Action Buttons -->
+                <div class="space-y-2">
+                    <a href="{% url 'site_detail' site.id %}" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-cog mr-2"></i>
+                        Manage
                     </a>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{% url 'site_rules' site.id %}" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-3 py-2 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-shield-virus mr-1"></i>
+                            Rules
+                        </a>
+                        <a href="{% url 'site_stats' site.id %}" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-3 py-2 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-chart-bar mr-1"></i>
+                            Stats
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Status Indicator -->
+            <div class="px-6 pb-6">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-cf-600">Protection Status</span>
+                    <div class="flex items-center space-x-2">
+                        {% if site.is_active %}
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-green-600 font-medium">Protected</span>
+                        {% else %}
+                            <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                            <span class="text-red-600 font-medium">Unprotected</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination if needed -->
+    {% if sites.has_other_pages %}
+    <div class="mt-8 flex justify-center">
+        <nav class="flex items-center space-x-2">
+            {% if sites.has_previous %}
+                <a href="?page={{ sites.previous_page_number }}" class="px-3 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+            
+            <span class="px-3 py-2 text-sm text-cf-600">
+                Page {{ sites.number }} of {{ sites.paginator.num_pages }}
+            </span>
+            
+            {% if sites.has_next %}
+                <a href="?page={{ sites.next_page_number }}" class="px-3 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
     {% endif %}
+
+{% else %}
+    <!-- Empty State -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-12 text-center">
+            <i class="fas fa-globe text-cf-300 text-6xl mb-6"></i>
+            <h3 class="text-xl font-semibold text-cf-900 mb-3">No Sites Protected Yet</h3>
+            <p class="text-cf-600 mb-8 max-w-md mx-auto">Start protecting your websites with our advanced Web Application Firewall. Add your first site to get started.</p>
+            <button onclick="openModal('addSiteModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-8 py-3 transition-colors duration-200 inline-flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                Add Your First Site
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Modals -->
+{% block modals %}
+<!-- Add Site Modal -->
+<div id="addSiteModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Add New Site</h3>
+            <button onclick="closeModal('addSiteModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <form action="{% url 'site_add' %}" method="post" class="p-6 space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="domain" class="block text-sm font-medium text-cf-900 mb-2">Domain</label>
+                <input type="text" id="domain" name="domain" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="example.com" required>
+                <p class="mt-1 text-xs text-cf-500">Enter the domain you want to protect</p>
+            </div>
+            <div>
+                <label for="backend_url" class="block text-sm font-medium text-cf-900 mb-2">Backend URL</label>
+                <input type="url" id="backend_url" name="backend_url" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="https://backend.example.com" required>
+                <p class="mt-1 text-xs text-cf-500">Your actual server URL where traffic will be forwarded</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex">
+                    <i class="fas fa-info-circle text-blue-600 mr-3 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-blue-800">Getting Started</h4>
+                        <p class="text-sm text-blue-700 mt-1">After adding your site, you'll need to configure DNS to point to our WAF servers for protection to take effect.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-4">
+                <button type="button" onclick="closeModal('addSiteModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    Add Site
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div id="bulkActionsModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Bulk Actions</h3>
+            <button onclick="closeModal('bulkActionsModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="space-y-3">
+                <button onclick="bulkAction('enable')" class="w-full flex items-center p-3 rounded-lg hover:bg-green-50 border border-cf-300 transition-colors duration-200">
+                    <i class="fas fa-play w-5 h-5 text-green-600 mr-3"></i>
+                    <div class="text-left">
+                        <div class="font-medium text-cf-900">Enable All Sites</div>
+                        <div class="text-sm text-cf-500">Turn on protection for all sites</div>
+                    </div>
+                </button>
+                <button onclick="bulkAction('disable')" class="w-full flex items-center p-3 rounded-lg hover:bg-yellow-50 border border-cf-300 transition-colors duration-200">
+                    <i class="fas fa-pause w-5 h-5 text-yellow-600 mr-3"></i>
+                    <div class="text-left">
+                        <div class="font-medium text-cf-900">Pause All Sites</div>
+                        <div class="text-sm text-cf-500">Temporarily disable protection</div>
+                    </div>
+                </button>
+                <button onclick="bulkAction('export')" class="w-full flex items-center p-3 rounded-lg hover:bg-blue-50 border border-cf-300 transition-colors duration-200">
+                    <i class="fas fa-download w-5 h-5 text-blue-600 mr-3"></i>
+                    <div class="text-left">
+                        <div class="font-medium text-cf-900">Export All Sites</div>
+                        <div class="text-sm text-cf-500">Download sites configuration</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-.site-card {
-    transition: all 0.2s ease;
-}
-
-.site-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.site-header {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-3);
-}
-
-.site-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, var(--primary-orange), var(--primary-blue));
-    border-radius: var(--border-radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-white);
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.site-info {
-    flex: 1;
-}
-
-.site-domain {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-1);
-}
-
-.site-backend {
-    font-family: 'Courier New', monospace;
-    color: var(--text-secondary);
-    font-size: 12px;
-    background-color: var(--bg-tertiary);
-    padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--border-radius);
-    margin-bottom: 0;
-}
-
-.site-status {
-    flex-shrink: 0;
-}
-
-.site-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-4);
-    margin: var(--spacing-4) 0;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1;
-    margin-bottom: var(--spacing-1);
-}
-
-.stat-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-}
-
-.site-actions {
-    display: flex;
-    gap: var(--spacing-2);
-}
-
-.site-actions .btn {
-    flex: 1;
-    justify-content: center;
-}
-
-/* Empty State */
-.empty-state {
-    grid-column: 1 / -1;
-}
-
-.empty-content {
-    text-align: center;
-    padding: var(--spacing-16) var(--spacing-6);
-}
-
-.empty-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, var(--primary-orange), var(--primary-blue));
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    color: var(--text-white);
-    margin-bottom: var(--spacing-6);
-    opacity: 0.8;
-}
-
-.empty-content h3 {
-    margin-bottom: var(--spacing-2);
-    color: var(--text-primary);
-}
-
-.empty-content p {
-    margin-bottom: var(--spacing-6);
-    color: var(--text-secondary);
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-@media (max-width: 768px) {
-    .site-header {
-        flex-direction: column;
-        gap: var(--spacing-3);
-        text-align: center;
+<script>
+function bulkAction(action) {
+    let message = '';
+    let confirmMessage = '';
+    
+    switch(action) {
+        case 'enable':
+            message = 'All sites have been enabled for protection.';
+            confirmMessage = 'Are you sure you want to enable protection for all sites?';
+            break;
+        case 'disable':
+            message = 'All sites have been paused.';
+            confirmMessage = 'Are you sure you want to pause protection for all sites?';
+            break;
+        case 'export':
+            message = 'Sites configuration exported successfully!';
+            confirmMessage = 'Export all sites configuration?';
+            break;
     }
     
-    .site-stats {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--spacing-2);
-    }
-    
-    .site-actions {
-        flex-direction: column;
-    }
-    
-    .empty-content {
-        padding: var(--spacing-12) var(--spacing-4);
+    if (confirm(confirmMessage)) {
+        closeModal('bulkActionsModal');
+        // Show loading and success
+        setTimeout(() => {
+            alert(message);
+        }, 500);
     }
 }
-</style>
+</script>
 {% endblock %}

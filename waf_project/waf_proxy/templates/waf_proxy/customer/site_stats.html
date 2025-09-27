@@ -1,99 +1,197 @@
-{% extends 'waf_proxy/base.html' %}
+{% extends 'waf_proxy/main_layout.html' %}
 
-{% block title %}{{ site.domain }} Stats - WAF Dashboard{% endblock %}
+{% block page_title %}{{ site.domain }} - Analytics{% endblock %}
+{% block page_subtitle %}Security statistics and activity monitoring{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'site_list' %}">My Sites</a></li>
-                <li class="breadcrumb-item active">{{ site.domain }} Stats</li>
-            </ol>
-        </nav>
-        <h1 class="h3 mb-0">
-            <i class="fas fa-chart-bar text-primary me-2"></i>Statistics for {{ site.domain }}
-        </h1>
+{% block breadcrumb_items %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <a href="{% url 'site_list' %}" class="ml-1 text-sm font-medium text-cf-700 hover:text-primary-600">My Sites</a>
     </div>
-    <a href="{% url 'site_rules' site.id %}" class="btn btn-outline-primary">
-        <i class="fas fa-shield-alt me-2"></i>Manage Rules
-    </a>
+</li>
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <a href="{% url 'site_detail' site.id %}" class="ml-1 text-sm font-medium text-cf-700 hover:text-primary-600">{{ site.domain|truncatechars:20 }}</a>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <span class="ml-1 text-sm font-medium text-cf-500">Analytics</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'site_rules' site.id %}" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-shield-alt mr-2"></i>
+    Manage Rules
+</a>
+<a href="{% url 'site_detail' site.id %}" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-cog mr-2"></i>
+    Site Settings
+</a>
+{% endblock %}
+
+{% block main_content %}
+<!-- Site Info Header -->
+<div class="bg-white border border-cf-200 rounded-lg shadow-cf mb-8">
+    <div class="p-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-secondary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-cf">
+                    <i class="fas fa-globe text-white text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-cf-900">{{ site.domain }}</h2>
+                    <p class="text-cf-600 font-mono text-sm">{{ site.backend_url }}</p>
+                </div>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if site.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                {% if site.is_active %}
+                    <i class="fas fa-check-circle mr-2"></i>Protected
+                {% else %}
+                    <i class="fas fa-pause-circle mr-2"></i>Inactive
+                {% endif %}
+            </span>
+        </div>
+    </div>
 </div>
 
 <!-- Stats Overview -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-            <div class="card-body text-center">
-                <i class="fas fa-eye fa-2x mb-2"></i>
-                <h3 class="mb-0">{{ recent_logs|length }}</h3>
-                <small>Total Requests</small>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Requests -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 mr-4">
+                    <i class="fas fa-eye text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ recent_logs|length }}</div>
+                    <div class="text-sm text-cf-600">Total Requests</div>
+                    <div class="text-xs text-cf-500 mt-1">Last 7 days</div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card success">
-            <div class="card-body text-center">
-                <i class="fas fa-check-circle fa-2x mb-2"></i>
-                <h3 class="mb-0">{% for log in recent_logs %}{% if log.status == 'ALLOWED' %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}</h3>
-                <small>Allowed</small>
+
+    <!-- Allowed Requests -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 mr-4">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">
+                        {% for log in recent_logs %}{% if log.status == 'ALLOWED' %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}
+                    </div>
+                    <div class="text-sm text-cf-600">Allowed</div>
+                    <div class="text-xs text-green-600 mt-1 flex items-center">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        Clean traffic
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card warning">
-            <div class="card-body text-center">
-                <i class="fas fa-ban fa-2x mb-2"></i>
-                <h3 class="mb-0">{% for log in recent_logs %}{% if log.status == 'BLOCKED' %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}</h3>
-                <small>Blocked</small>
+
+    <!-- Blocked Requests -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 mr-4">
+                    <i class="fas fa-ban text-red-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">
+                        {% for log in recent_logs %}{% if log.status == 'BLOCKED' %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}
+                    </div>
+                    <div class="text-sm text-cf-600">Blocked</div>
+                    <div class="text-xs text-red-600 mt-1 flex items-center">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Threats stopped
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card stat-card info">
-            <div class="card-body text-center">
-                <i class="fas fa-shield-alt fa-2x mb-2"></i>
-                <h3 class="mb-0">{{ site.siterule_set.count }}</h3>
-                <small>Active Rules</small>
+
+    <!-- Active Rules -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-primary-100 mr-4">
+                    <i class="fas fa-shield-virus text-primary-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ site.siterule_set.count }}</div>
+                    <div class="text-sm text-cf-600">Active Rules</div>
+                    <div class="text-xs text-primary-600 mt-1 flex items-center">
+                        <i class="fas fa-cog mr-1"></i>
+                        Protection layers
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Charts Section -->
-{% if stats %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-chart-line text-primary me-2"></i>7-Day Activity Overview
-                </h5>
+<!-- Charts and Activity Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Activity Chart -->
+    <div class="lg:col-span-2">
+        {% if stats %}
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-chart-line mr-3 text-secondary-600"></i>
+                    7-Day Activity Overview
+                </h3>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-cf-500">
+                        <thead class="text-xs text-cf-700 uppercase bg-cf-50">
                             <tr>
-                                <th>Date</th>
-                                <th>Total Requests</th>
-                                <th>Blocked</th>
-                                <th>Allowed</th>
-                                <th>Block Rate</th>
+                                <th scope="col" class="px-6 py-3 rounded-l-lg">Date</th>
+                                <th scope="col" class="px-6 py-3">Total Requests</th>
+                                <th scope="col" class="px-6 py-3">Blocked</th>
+                                <th scope="col" class="px-6 py-3">Allowed</th>
+                                <th scope="col" class="px-6 py-3 rounded-r-lg">Block Rate</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for stat in stats %}
-                            <tr>
-                                <td>{{ stat.date|date:"M d, Y" }}</td>
-                                <td>{{ stat.total_requests }}</td>
-                                <td><span class="text-danger">{{ stat.blocked_requests }}</span></td>
-                                <td><span class="text-success">{{ stat.allowed_requests }}</span></td>
-                                <td>
+                            <tr class="bg-white border-b border-cf-200 hover:bg-cf-50">
+                                <th scope="row" class="px-6 py-4 font-medium text-cf-900 whitespace-nowrap">
+                                    {{ stat.date|date:"M d, Y" }}
+                                </th>
+                                <td class="px-6 py-4 font-medium">{{ stat.total_requests }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        {{ stat.blocked_requests }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ stat.allowed_requests }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
                                     {% if stat.total_requests > 0 %}
-                                        {% widthratio stat.blocked_requests stat.total_requests 100 %}%
+                                        {% widthratio stat.blocked_requests stat.total_requests 100 as block_rate %}
+                                        <div class="flex items-center">
+                                            <div class="w-16 bg-cf-200 rounded-full h-2 mr-3">
+                                                <div class="bg-red-600 h-2 rounded-full" style="width: {{ block_rate }}%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium">{{ block_rate }}%</span>
+                                        </div>
                                     {% else %}
-                                        0%
+                                        <span class="text-cf-400">0%</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -103,76 +201,252 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Recent Activity -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-history text-primary me-2"></i>Recent Activity (Last 20 requests)
-                </h5>
+        {% else %}
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="p-12 text-center">
+                <i class="fas fa-chart-line text-cf-300 text-5xl mb-4"></i>
+                <h4 class="text-lg font-medium text-cf-900 mb-2">No Statistics Available</h4>
+                <p class="text-cf-600">Statistics will appear here once your site starts receiving traffic</p>
             </div>
-            <div class="card-body">
-                {% if recent_logs %}
-                    <div class="table-responsive">
-                        <table class="table table-hover table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>IP Address</th>
-                                    <th>Method</th>
-                                    <th>URL</th>
-                                    <th>User Agent</th>
-                                    <th>Status</th>
-                                    <th>Rule</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in recent_logs %}
-                                <tr>
-                                    <td>{{ log.timestamp|date:"H:i:s" }}</td>
-                                    <td>
-                                        <small class="text-muted">{{ log.ip_address }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ log.method }}</span>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">{{ log.url|truncatechars:30 }}</small>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">{{ log.user_agent|truncatechars:40 }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge {% if log.status == 'BLOCKED' %}bg-danger{% elif log.status == 'ALLOWED' %}bg-success{% else %}bg-warning{% endif %}">
-                                            {{ log.status }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if log.rule_matched %}
-                                            <small class="text-muted">{{ log.rule_matched.name }}</small>
-                                        {% else %}
-                                            <small class="text-muted">-</small>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Site Info Sidebar -->
+    <div class="space-y-6">
+        <!-- Site Configuration -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-cog mr-3 text-cf-400"></i>
+                    Configuration
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-cf-500 mb-1">Domain</label>
+                    <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                        <span class="text-cf-900 font-mono">{{ site.domain }}</span>
                     </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-clock fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No activity yet</h5>
-                        <p class="text-muted">Activity will appear here as requests are processed for this site.</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-cf-500 mb-1">Backend URL</label>
+                    <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                        <span class="text-cf-900 font-mono text-sm break-all">{{ site.backend_url }}</span>
                     </div>
-                {% endif %}
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-cf-500 mb-1">Created</label>
+                    <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                        <span class="text-cf-900">{{ site.created_at|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 space-y-2">
+                    <a href="{% url 'site_detail' site.id %}" class="w-full bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-cog mr-2"></i>
+                        Site Settings
+                    </a>
+                    <a href="{% url 'site_rules' site.id %}" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-shield-virus mr-2"></i>
+                        Manage Rules
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-zap mr-3 text-yellow-600"></i>
+                    Quick Actions
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <button onclick="refreshStats()" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh Data
+                </button>
+                <button onclick="openModal('exportModal')" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-download mr-2"></i>
+                    Export Report
+                </button>
+                <button onclick="openModal('alertModal')" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-bell mr-2"></i>
+                    Set Alerts
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Recent Activity -->
+<div class="bg-white border border-cf-200 rounded-lg shadow-cf mb-8">
+    <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+        <h3 class="text-lg font-medium text-cf-900 flex items-center">
+            <i class="fas fa-history mr-3 text-yellow-600"></i>
+            Recent Activity
+        </h3>
+        <span class="text-sm text-cf-500">Last 20 requests</span>
+    </div>
+    <div class="overflow-x-auto">
+        {% if recent_logs %}
+            <table class="w-full text-sm text-left text-cf-500">
+                <thead class="text-xs text-cf-700 uppercase bg-cf-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Time</th>
+                        <th scope="col" class="px-6 py-3">IP Address</th>
+                        <th scope="col" class="px-6 py-3">Method</th>
+                        <th scope="col" class="px-6 py-3">URL</th>
+                        <th scope="col" class="px-6 py-3">User Agent</th>
+                        <th scope="col" class="px-6 py-3">Status</th>
+                        <th scope="col" class="px-6 py-3">Rule</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr class="bg-white border-b border-cf-200 hover:bg-cf-50">
+                        <td class="px-6 py-4 font-medium text-cf-900">
+                            {{ log.timestamp|date:"H:i:s" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="font-mono text-cf-700">{{ log.ip_address }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-cf-100 text-cf-800">
+                                {{ log.method }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 max-w-xs">
+                            <span class="font-mono text-cf-700 truncate block">{{ log.url|truncatechars:40 }}</span>
+                        </td>
+                        <td class="px-6 py-4 max-w-xs">
+                            <span class="text-cf-600 truncate block">{{ log.user_agent|truncatechars:30 }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {% if log.status == 'BLOCKED' %}bg-red-100 text-red-800{% elif log.status == 'RATE_LIMITED' %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {% if log.status == 'BLOCKED' %}
+                                    <i class="fas fa-ban mr-1"></i>
+                                {% elif log.status == 'RATE_LIMITED' %}
+                                    <i class="fas fa-clock mr-1"></i>
+                                {% else %}
+                                    <i class="fas fa-check mr-1"></i>
+                                {% endif %}
+                                {{ log.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if log.rule_matched %}
+                                <span class="text-cf-700 text-xs">{{ log.rule_matched.name|truncatechars:20 }}</span>
+                            {% else %}
+                                <span class="text-cf-400">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="p-12 text-center">
+                <i class="fas fa-clock text-cf-300 text-5xl mb-4"></i>
+                <h4 class="text-lg font-medium text-cf-900 mb-2">No Activity Yet</h4>
+                <p class="text-cf-600">Activity will appear here as requests are processed for this site.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals -->
+{% block modals %}
+<!-- Export Modal -->
+<div id="exportModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Export Report</h3>
+            <button onclick="closeModal('exportModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Time Period</label>
+                <select class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 90 days</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Format</label>
+                <select class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                    <option>CSV</option>
+                    <option>JSON</option>
+                    <option>PDF</option>
+                </select>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-4">
+                <button onclick="closeModal('exportModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Modal -->
+<div id="alertModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Set Alert Thresholds</h3>
+            <button onclick="closeModal('alertModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-cf-900 mb-2">Alert when blocked requests exceed</label>
+                <div class="flex">
+                    <input type="number" class="flex-1 px-3 py-2 border border-cf-300 rounded-l-lg focus:ring-primary-500 focus:border-primary-500" placeholder="100">
+                    <span class="px-3 py-2 bg-cf-100 border border-l-0 border-cf-300 rounded-r-lg text-cf-600">per hour</span>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" class="w-4 h-4 text-primary-600 bg-cf-100 border-cf-300 rounded focus:ring-primary-500 focus:ring-2">
+                <label class="ml-2 text-sm text-cf-900">Email notifications</label>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-4">
+                <button onclick="closeModal('alertModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    Save Alert
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+function refreshStats() {
+    // Show loading state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+    button.disabled = true;
+    
+    // Simulate refresh (in real implementation, this would make an AJAX call)
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        location.reload();
+    }, 1500);
+}
+</script>
 {% endblock %}

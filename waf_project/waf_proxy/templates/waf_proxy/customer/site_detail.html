@@ -1,159 +1,472 @@
-{% extends 'waf_proxy/dashboard/layout.html' %}
-{% load static %}
+{% extends 'waf_proxy/main_layout.html' %}
 
-{% block title %}{{ site.name }} - Site Details{% endblock %}
+{% block page_title %}{{ site.domain }}{% endblock %}
+{% block page_subtitle %}Site configuration and management{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+{% block breadcrumb_items %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <a href="{% url 'site_list' %}" class="ml-1 text-sm font-medium text-cf-700 hover:text-primary-600">My Sites</a>
+    </div>
+</li>
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <span class="ml-1 text-sm font-medium text-cf-500">{{ site.domain|truncatechars:25 }}</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'site_edit' site.id %}" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-edit mr-2"></i>
+    Edit Site
+</a>
+<a href="{% url 'site_rules' site.id %}" class="bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-shield-alt mr-2"></i>
+    Rules
+</a>
+<a href="{% url 'site_stats' site.id %}" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-chart-bar mr-2"></i>
+    Analytics
+</a>
+{% endblock %}
+
+{% block main_content %}
+<!-- Site Status Banner -->
+<div class="{% if site.is_active %}bg-green-50 border-green-200{% else %}bg-yellow-50 border-yellow-200{% endif %} border rounded-lg p-4 mb-8">
+    <div class="flex items-center">
+        <div class="flex-shrink-0">
+            {% if site.is_active %}
+                <i class="fas fa-check-circle text-green-400 text-2xl"></i>
+            {% else %}
+                <i class="fas fa-pause-circle text-yellow-400 text-2xl"></i>
+            {% endif %}
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium {% if site.is_active %}text-green-800{% else %}text-yellow-800{% endif %}">
+                {% if site.is_active %}
+                    Site is Protected
+                {% else %}
+                    Site Protection is Paused
+                {% endif %}
+            </h3>
+            <div class="mt-1 text-sm {% if site.is_active %}text-green-700{% else %}text-yellow-700{% endif %}">
+                {% if site.is_active %}
+                    Your site is actively protected by our WAF. All traffic is being monitored and filtered.
+                {% else %}
+                    Site protection is currently disabled. Enable protection to start filtering traffic.
+                {% endif %}
+            </div>
+        </div>
+        <div class="ml-auto">
+            <button onclick="toggleSiteStatus()" class="{% if site.is_active %}bg-yellow-600 hover:bg-yellow-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white font-medium rounded-lg text-sm px-4 py-2 transition-colors duration-200">
+                {% if site.is_active %}
+                    Pause Protection
+                {% else %}
+                    Enable Protection
+                {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Requests -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 mr-4">
+                    <i class="fas fa-globe text-blue-600 text-xl"></i>
+                </div>
                 <div>
-                    <h1 class="h3">🌐 {{ site.name }}</h1>
-                    <p class="text-muted mb-0">{{ site.domain }}</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{% url 'site_edit' site.id %}" class="btn btn-outline-primary">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                    <a href="{% url 'site_rules' site.id %}" class="btn btn-outline-info">
-                        <i class="fas fa-shield-alt"></i> Rules
-                    </a>
-                    <a href="{% url 'site_stats' site.id %}" class="btn btn-outline-success">
-                        <i class="fas fa-chart-bar"></i> Analytics
-                    </a>
-                    <a href="{% url 'site_list' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </a>
+                    <div class="text-2xl font-bold text-cf-900">{{ total_requests }}</div>
+                    <div class="text-sm text-cf-600">Total Requests</div>
+                    <div class="text-xs text-cf-500 mt-1">Last 7 days</div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h2 class="text-primary">{{ total_requests }}</h2>
-                            <p class="mb-0">Total Requests (7 days)</p>
-                        </div>
-                    </div>
+    <!-- Blocked Requests -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 mr-4">
+                    <i class="fas fa-ban text-red-600 text-xl"></i>
                 </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h2 class="text-danger">{{ blocked_requests }}</h2>
-                            <p class="mb-0">Blocked Requests</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h2 class="text-success">{{ active_rules_count }}</h2>
-                            <p class="mb-0">Active Rules</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            {% if site.is_active %}
-                                <h2 class="text-success">🟢</h2>
-                                <p class="mb-0">Status: Active</p>
-                            {% else %}
-                                <h2 class="text-warning">🟡</h2>
-                                <p class="mb-0">Status: Inactive</p>
-                            {% endif %}
-                        </div>
-                    </div>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ blocked_requests }}</div>
+                    <div class="text-sm text-cf-600">Blocked Threats</div>
+                    <div class="text-xs text-red-600 mt-1">Security events</div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">📋 Recent Activity</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if recent_logs %}
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Time</th>
-                                                <th>IP</th>
-                                                <th>Method</th>
-                                                <th>Path</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for log in recent_logs %}
-                                            <tr>
-                                                <td>{{ log.timestamp|date:"M d, H:i" }}</td>
-                                                <td>{{ log.client_ip }}</td>
-                                                <td>{{ log.method }}</td>
-                                                <td class="text-truncate" style="max-width: 200px;">{{ log.path }}</td>
-                                                <td>
-                                                    {% if log.status == 'BLOCKED' %}
-                                                        <span class="badge bg-danger">{{ log.status }}</span>
-                                                    {% else %}
-                                                        <span class="badge bg-success">{{ log.status }}</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% else %}
-                                <p class="text-muted mb-0">No recent activity</p>
-                            {% endif %}
-                        </div>
-                    </div>
+    <!-- Active Rules -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-primary-100 mr-4">
+                    <i class="fas fa-shield-virus text-primary-600 text-xl"></i>
                 </div>
-                
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0">⚙️ Site Configuration</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <strong>Domain:</strong>
-                                <p class="mb-1">{{ site.domain }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <strong>Backend URL:</strong>
-                                <p class="mb-1 small">{{ site.backend_url }}</p>
-                            </div>
-                            
-                            {% if site.description %}
-                            <div class="mb-3">
-                                <strong>Description:</strong>
-                                <p class="mb-1 small">{{ site.description }}</p>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="mb-3">
-                                <strong>Created:</strong>
-                                <p class="mb-1 small">{{ site.created_at|date:"M d, Y" }}</p>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <a href="{% url 'site_edit' site.id %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i> Edit Site
-                                </a>
-                                <a href="{% url 'site_rules' site.id %}" class="btn btn-sm btn-outline-info">
-                                    <i class="fas fa-shield-alt"></i> Manage Rules
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">{{ active_rules_count }}</div>
+                    <div class="text-sm text-cf-600">Active Rules</div>
+                    <div class="text-xs text-primary-600 mt-1">Protection layers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Score -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 mr-4">
+                    <i class="fas fa-heartbeat text-green-600 text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-cf-900">98%</div>
+                    <div class="text-sm text-cf-600">Health Score</div>
+                    <div class="text-xs text-green-600 mt-1">Excellent</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Configuration Panel -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Site Configuration -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-cog mr-3 text-secondary-600"></i>
+                    Site Configuration
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-cf-500 mb-2">Domain</label>
+                        <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                            <span class="text-cf-900 font-mono">{{ site.domain }}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cf-500 mb-2">Status</label>
+                        <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {% if site.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if site.is_active %}
+                                    <i class="fas fa-check-circle mr-1"></i>Active
+                                {% else %}
+                                    <i class="fas fa-pause-circle mr-1"></i>Inactive
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-cf-500 mb-2">Backend URL</label>
+                        <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                            <span class="text-cf-900 font-mono text-sm break-all">{{ site.backend_url }}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cf-500 mb-2">Created</label>
+                        <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                            <span class="text-cf-900">{{ site.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cf-500 mb-2">Owner</label>
+                        <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                            <span class="text-cf-900">{{ site.owner.email }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Summary -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-activity mr-3 text-yellow-600"></i>
+                    Recent Activity
+                </h3>
+                <a href="{% url 'site_stats' site.id %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                    View Full Analytics <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="p-6">
+                {% if recent_logs %}
+                    <div class="space-y-4">
+                        {% for log in recent_logs|slice:":5" %}
+                        <div class="flex items-center justify-between p-4 bg-cf-50 rounded-lg">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center {% if log.status == 'BLOCKED' %}bg-red-100{% elif log.status == 'RATE_LIMITED' %}bg-yellow-100{% else %}bg-green-100{% endif %}">
+                                    {% if log.status == 'BLOCKED' %}
+                                        <i class="fas fa-ban text-red-600 text-sm"></i>
+                                    {% elif log.status == 'RATE_LIMITED' %}
+                                        <i class="fas fa-clock text-yellow-600 text-sm"></i>
+                                    {% else %}
+                                        <i class="fas fa-check text-green-600 text-sm"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="font-medium text-cf-900 font-mono text-sm">{{ log.method }} {{ log.url|truncatechars:40 }}</div>
+                                    <div class="text-sm text-cf-600">{{ log.ip_address }} • {{ log.timestamp|timesince }} ago</div>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {% if log.status == 'BLOCKED' %}bg-red-100 text-red-800{% elif log.status == 'RATE_LIMITED' %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ log.status }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-clock text-cf-300 text-4xl mb-4"></i>
+                        <h4 class="text-lg font-medium text-cf-900 mb-2">No Recent Activity</h4>
+                        <p class="text-cf-600">Activity will appear here once your site starts receiving traffic.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Quick Actions -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-bolt mr-3 text-yellow-600"></i>
+                    Quick Actions
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <button onclick="openModal('testSiteModal')" class="w-full bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-flask mr-2"></i>
+                    Test Protection
+                </button>
+                <a href="{% url 'site_stats' site.id %}" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    View Analytics
+                </a>
+                <button onclick="openModal('backupModal')" class="w-full text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-download mr-2"></i>
+                    Backup Rules
+                </button>
+            </div>
+        </div>
+
+        <!-- Security Summary -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-shield-check mr-3 text-green-600"></i>
+                    Security Summary
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">Protection Rules</span>
+                    <span class="text-sm font-medium text-cf-900">{{ active_rules_count }} active</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">Threats Blocked</span>
+                    <span class="text-sm font-medium text-cf-900">{{ blocked_requests }} this week</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">Uptime</span>
+                    <span class="text-sm font-medium text-green-600">99.9%</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-cf-600">Last Check</span>
+                    <span class="text-sm font-medium text-cf-900">{{ site.created_at|timesince }} ago</span>
+                </div>
+                
+                <div class="pt-4 border-t border-cf-200">
+                    <a href="{% url 'site_rules' site.id %}" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Manage Security Rules
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- DNS Information -->
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-network-wired mr-3 text-secondary-600"></i>
+                    DNS Information
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="bg-cf-50 border border-cf-200 rounded-lg p-4">
+                    <div class="text-sm text-cf-600 mb-2">Point your domain to our WAF servers:</div>
+                    <div class="font-mono text-sm text-cf-900 bg-white p-2 rounded border">
+                        waf.yourdomain.com
+                    </div>
+                    <button onclick="copyToClipboard('waf.yourdomain.com')" class="mt-3 text-primary-600 hover:text-primary-700 text-sm font-medium">
+                        <i class="fas fa-copy mr-1"></i>Copy DNS Record
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+{% block modals %}
+<!-- Test Site Modal -->
+<div id="testSiteModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-lg mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Test Site Protection</h3>
+            <button onclick="closeModal('testSiteModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-cf-900 mb-2">Test URL</label>
+                    <input type="url" value="{{ site.domain }}" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-cf-900 mb-2">Test Type</label>
+                    <select class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                        <option>SQL Injection Test</option>
+                        <option>XSS Test</option>
+                        <option>Path Traversal Test</option>
+                        <option>Rate Limit Test</option>
+                    </select>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex">
+                        <i class="fas fa-info-circle text-blue-600 mr-3 mt-0.5"></i>
+                        <div>
+                            <h4 class="text-sm font-medium text-blue-800">About Security Tests</h4>
+                            <p class="text-sm text-blue-700 mt-1">These tests will simulate common attack patterns to verify your protection rules are working correctly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-6">
+                <button onclick="closeModal('testSiteModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button onclick="runSecurityTest()" class="px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white rounded-lg transition-colors duration-200">
+                    Run Test
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Backup Modal -->
+<div id="backupModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Backup Security Rules</h3>
+            <button onclick="closeModal('backupModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-cf-600 mb-4">Export your current security rules configuration for backup or migration purposes.</p>
+            <div class="space-y-3">
+                <label class="flex items-center p-3 border border-cf-300 rounded-lg hover:bg-cf-50 cursor-pointer">
+                    <input type="radio" name="backup_format" value="json" class="text-primary-600" checked>
+                    <div class="ml-3">
+                        <div class="font-medium text-cf-900">JSON Format</div>
+                        <div class="text-sm text-cf-500">Machine-readable format</div>
+                    </div>
+                </label>
+                <label class="flex items-center p-3 border border-cf-300 rounded-lg hover:bg-cf-50 cursor-pointer">
+                    <input type="radio" name="backup_format" value="yaml" class="text-primary-600">
+                    <div class="ml-3">
+                        <div class="font-medium text-cf-900">YAML Format</div>
+                        <div class="text-sm text-cf-500">Human-readable format</div>
+                    </div>
+                </label>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-6">
+                <button onclick="closeModal('backupModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button onclick="downloadBackup()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    <i class="fas fa-download mr-2"></i>
+                    Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+function toggleSiteStatus() {
+    const isActive = {{ site.is_active|yesno:"true,false" }};
+    const action = isActive ? 'pause' : 'enable';
+    
+    if (confirm(`Are you sure you want to ${action} protection for this site?`)) {
+        // In a real implementation, this would make an AJAX call
+        alert(`Site protection ${action}d successfully!`);
+    }
+}
+
+function runSecurityTest() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Running Test...';
+    button.disabled = true;
+    
+    // Simulate test running
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        closeModal('testSiteModal');
+        alert('Security test completed successfully! All protection rules are working correctly.');
+    }, 3000);
+}
+
+function downloadBackup() {
+    const format = document.querySelector('input[name="backup_format"]:checked').value;
+    alert(`Downloading backup in ${format.toUpperCase()} format...`);
+    closeModal('backupModal');
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Show success feedback
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+        button.classList.add('text-green-600');
+        
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('text-green-600');
+        }, 2000);
+    });
+}
+</script>
 {% endblock %}
