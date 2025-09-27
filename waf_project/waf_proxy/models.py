@@ -59,10 +59,26 @@ class User(AbstractBaseUser):
         return f"{self.email} ({self.user_type})"
 
     def has_perm(self, perm, obj=None):
-        return True
+        return self.user_type == 'admin'
 
     def has_module_perms(self, app_label):
-        return True
+        return self.user_type == 'admin'
+
+    def get_all_permissions(self, obj=None):
+        """Return a set of permission strings that this user has."""
+        if self.user_type == 'admin':
+            return {'*'}  # Admin has all permissions
+        return set()
+
+    def get_group_permissions(self, obj=None):
+        """Return a set of permission strings that this user has through their groups."""
+        return set()
+
+    def get_user_permissions(self, obj=None):
+        """Return a set of permission strings that this user has directly."""
+        if self.user_type == 'admin':
+            return {'*'}  # Admin has all permissions
+        return set()
 
     @property
     def is_staff(self):
@@ -71,22 +87,24 @@ class User(AbstractBaseUser):
     @property
     def is_superuser(self):
         return self.user_type == 'admin' and self.admin_level == 'super'
-        # لو اليوزر عامل تسجيل أول مرة بجوجل
-        @receiver(user_signed_up)
-        def activate_user_on_google_signup(request, user, **kwargs):
-            if user and not user.is_active:
-                user.is_active = True
-                user.is_email_verified = True
-                user.save()
 
-        # لو يوزر قديم وربط حساب جوجل
-        @receiver(social_account_added)
-        def activate_user_on_google_connect(request, sociallogin, **kwargs):
-            user = sociallogin.user
-            if user and not user.is_active:
-                user.is_active = True
-                user.is_email_verified = True
-                user.save()
+# Signal handlers for Google OAuth
+@receiver(user_signed_up)
+def activate_user_on_google_signup(request, user, **kwargs):
+    """لو اليوزر عامل تسجيل أول مرة بجوجل"""
+    if user and not user.is_active:
+        user.is_active = True
+        user.is_email_verified = True
+        user.save()
+
+@receiver(social_account_added)
+def activate_user_on_google_connect(request, sociallogin, **kwargs):
+    """لو يوزر قديم وربط حساب جوجل"""
+    user = sociallogin.user
+    if user and not user.is_active:
+        user.is_active = True
+        user.is_email_verified = True
+        user.save()
 # Site Model
 class Site(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
