@@ -18,7 +18,7 @@
 <!-- Quick Stats Section -->
 <div class="mb-8">
     <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+        <h2 class="text-xl font-semibold text-cf-900 flex items-center">
             <i class="fas fa-chart-bar mr-3 text-primary-600"></i>
             Your Security Overview
         </h2>
@@ -26,45 +26,45 @@
     
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Total Sites -->
-        <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
             <div class="p-6">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-blue-100 mr-4">
-                        <i class="fas fa-globe text-blue-600 text-xl"></i>
+                    <div class="p-3 rounded-full bg-secondary-100 mr-4">
+                        <i class="fas fa-globe text-secondary-600 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-2xl font-bold text-gray-900">{{ total_sites }}</div>
-                        <div class="text-sm text-gray-600">Protected Sites</div>
+                        <div class="text-2xl font-bold text-cf-900">{{ total_sites }}</div>
+                        <div class="text-sm text-cf-600">Protected Sites</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Today's Requests -->
-        <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-green-100 mr-4">
                         <i class="fas fa-exchange-alt text-green-600 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-2xl font-bold text-gray-900">{{ total_requests_today|floatformat:0 }}</div>
-                        <div class="text-sm text-gray-600">Requests Today</div>
+                        <div class="text-2xl font-bold text-cf-900">{{ total_requests_today|floatformat:0 }}</div>
+                        <div class="text-sm text-cf-600">Requests Today</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Blocked Attacks -->
-        <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
             <div class="p-6">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-red-100 mr-4">
-                        <i class="fas fa-shield-alt text-red-600 text-xl"></i>
+                    <div class="p-3 rounded-full bg-primary-100 mr-4">
+                        <i class="fas fa-shield-alt text-primary-600 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-2xl font-bold text-gray-900">{{ blocked_today }}</div>
-                        <div class="text-sm text-gray-600">Threats Blocked</div>
+                        <div class="text-2xl font-bold text-cf-900">{{ blocked_today }}</div>
+                        <div class="text-sm text-cf-600">Threats Blocked</div>
                     </div>
                 </div>
             </div>
@@ -73,103 +73,99 @@
 </div>
 
 <!-- Sites Overview Section -->
-<div class="dashboard-section">
-    <div class="section-header">
-        <h2 class="section-title">
-            <i class="fas fa-server"></i>
+<div class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-cf-900 flex items-center">
+            <i class="fas fa-server mr-3 text-secondary-600"></i>
             Your Sites
         </h2>
-        <div class="section-actions">
-            <a href="{% url 'site_list' %}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-list"></i>
-                View All
-            </a>
-        </div>
+        <a href="{% url 'site_list' %}" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2 transition-colors duration-200 flex items-center">
+            <i class="fas fa-list mr-2"></i>
+            View All
+        </a>
     </div>
     
     {% if sites %}
-        <div class="dashboard-grid cols-2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {% for site in sites %}
-                <div class="site-card dashboard-card">
-                    <div class="site-header">
-                        <div class="site-info">
-                            <h4 class="site-name">{{ site.domain }}</h4>
-                            <p class="site-backend">{{ site.backend_url }}</p>
+                <div class="bg-white border border-cf-200 rounded-lg shadow-cf hover:shadow-cf-md transition-shadow duration-200">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-medium text-cf-900 mb-1">{{ site.domain }}</h4>
+                                <p class="text-sm text-cf-600">{{ site.backend_url|truncatechars:40 }}</p>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {% if site.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if site.is_active %}
+                                    <i class="fas fa-check mr-1"></i>Active
+                                {% else %}
+                                    <i class="fas fa-pause mr-1"></i>Inactive
+                                {% endif %}
+                            </span>
                         </div>
-                        <div class="site-status">
-                            {% if site.is_active %}
-                                <span class="badge badge-success">
-                                    <i class="fas fa-check"></i>
-                                    Active
-                                </span>
-                            {% else %}
-                                <span class="badge badge-danger">
-                                    <i class="fas fa-pause"></i>
-                                    Inactive
-                                </span>
-                            {% endif %}
+                        
+                        <div class="flex items-center space-x-3">
+                            <a href="{% url 'site_rules' site.id %}" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-3 py-2 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-shield-virus mr-2"></i>
+                                Rules
+                            </a>
+                            <a href="{% url 'site_stats' site.id %}" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-3 py-2 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-chart-line mr-2"></i>
+                                Stats
+                            </a>
                         </div>
-                    </div>
-                    
-                    <div class="site-actions">
-                        <a href="{% url 'site_rules' site.id %}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-shield-virus"></i>
-                            Rules
-                        </a>
-                        <a href="{% url 'site_stats' site.id %}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-chart-line"></i>
-                            Stats
-                        </a>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="empty-state-card dashboard-card">
-            <div class="empty-state">
-                <i class="fas fa-globe"></i>
-                <h4>No Sites Protected Yet</h4>
-                <p>Add your first site to start protecting it with our WAF</p>
-                <a href="{% url 'site_list' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="p-12 text-center">
+                <i class="fas fa-globe text-cf-300 text-5xl mb-4"></i>
+                <h4 class="text-lg font-medium text-cf-900 mb-2">No Sites Protected Yet</h4>
+                <p class="text-cf-600 mb-6">Add your first site to start protecting it with our WAF</p>
+                <button onclick="openModal('addSiteModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-6 py-3 transition-colors duration-200 flex items-center mx-auto">
+                    <i class="fas fa-plus mr-2"></i>
                     Add Your First Site
-                </a>
+                </button>
             </div>
         </div>
     {% endif %}
 </div>
 
 <!-- Recent Activity Section -->
-<div class="dashboard-section">
-    <div class="section-header">
-        <h2 class="section-title">
-            <i class="fas fa-history"></i>
+<div class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-cf-900 flex items-center">
+            <i class="fas fa-history mr-3 text-yellow-600"></i>
             Recent Activity
         </h2>
     </div>
     
     {% if recent_logs %}
-        <div class="dashboard-card">
-            <div class="activity-list">
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="divide-y divide-cf-200">
                 {% for log in recent_logs %}
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            {% if log.status == 'BLOCKED' %}
-                                <i class="fas fa-ban text-danger"></i>
-                            {% elif log.status == 'RATE_LIMITED' %}
-                                <i class="fas fa-clock text-warning"></i>
-                            {% else %}
-                                <i class="fas fa-check text-success"></i>
-                            {% endif %}
-                        </div>
-                        <div class="activity-info">
-                            <div class="activity-title">{{ log.url|truncatechars:60 }}</div>
-                            <div class="activity-meta">
-                                {{ log.site.domain }} • {{ log.ip_address }} • {{ log.timestamp|timesince }} ago
+                    <div class="p-4 hover:bg-cf-50 transition-colors duration-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center {% if log.status == 'BLOCKED' %}bg-red-100{% elif log.status == 'RATE_LIMITED' %}bg-yellow-100{% else %}bg-green-100{% endif %}">
+                                    {% if log.status == 'BLOCKED' %}
+                                        <i class="fas fa-ban text-red-600 text-sm"></i>
+                                    {% elif log.status == 'RATE_LIMITED' %}
+                                        <i class="fas fa-clock text-yellow-600 text-sm"></i>
+                                    {% else %}
+                                        <i class="fas fa-check text-green-600 text-sm"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="font-medium text-cf-900">{{ log.url|truncatechars:60 }}</div>
+                                    <div class="text-sm text-cf-600">
+                                        {{ log.site.domain }} • {{ log.ip_address }} • {{ log.timestamp|timesince }} ago
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="activity-status">
-                            <span class="badge badge-{% if log.status == 'BLOCKED' %}danger{% elif log.status == 'RATE_LIMITED' %}warning{% else %}success{% endif %}">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {% if log.status == 'BLOCKED' %}bg-red-100 text-red-800{% elif log.status == 'RATE_LIMITED' %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
                                 {{ log.status }}
                             </span>
                         </div>
@@ -178,154 +174,15 @@
             </div>
         </div>
     {% else %}
-        <div class="dashboard-card">
-            <div class="empty-state">
-                <i class="fas fa-history"></i>
-                <h4>No Recent Activity</h4>
-                <p>Activity will appear here as your sites receive traffic</p>
+        <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+            <div class="p-12 text-center">
+                <i class="fas fa-history text-cf-300 text-5xl mb-4"></i>
+                <h4 class="text-lg font-medium text-cf-900 mb-2">No Recent Activity</h4>
+                <p class="text-cf-600">Activity will appear here once your sites start receiving traffic</p>
             </div>
         </div>
     {% endif %}
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-/* Site Card Styles */
-.site-card {
-    padding: 24px;
-}
-
-.site-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-}
-
-.site-info h4 {
-    color: var(--text-primary);
-    margin-bottom: 8px;
-    font-size: 1.125rem;
-}
-
-.site-backend {
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-family: monospace;
-    background: var(--accent-bg);
-    padding: 4px 8px;
-    border-radius: 4px;
-    margin-bottom: 0;
-}
-
-.site-actions {
-    display: flex;
-    gap: 12px;
-}
-
-/* Empty State Card */
-.empty-state-card {
-    grid-column: 1 / -1;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 48px 24px;
-}
-
-.empty-state i {
-    font-size: 64px;
-    color: var(--text-muted);
-    margin-bottom: 24px;
-    opacity: 0.5;
-}
-
-.empty-state h4 {
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-}
-
-.empty-state p {
-    color: var(--text-muted);
-    margin-bottom: 24px;
-}
-
-/* Activity List (reuse from admin) */
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    background: var(--accent-bg);
-    border-radius: var(--border-radius-sm);
-    border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.activity-item:hover {
-    background: var(--border-color);
-    transform: translateX(4px);
-}
-
-.activity-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--card-bg);
-    font-size: 16px;
-}
-
-.activity-info {
-    flex: 1;
-}
-
-.activity-title {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-}
-
-.activity-meta {
-    color: var(--text-secondary);
-    font-size: 12px;
-}
-
-.activity-status {
-    display: flex;
-    align-items: center;
-}
-
-/* Text utility classes */
-.text-danger { color: var(--danger) !important; }
-.text-warning { color: var(--warning) !important; }
-.text-success { color: var(--success) !important; }
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .site-header {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .site-actions {
-        width: 100%;
-    }
-    
-    .site-actions .btn {
-        flex: 1;
-    }
-}
-</style>
 {% endblock %}
 
 {% block modals %}
