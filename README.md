@@ -11,8 +11,9 @@ A Django-based Web Application Firewall (WAF) proxy system that provides securit
 - **Site Management**: Multi-site support with individual configurations
 - **Real-time Monitoring**: Request logging and statistics
 - **Email Notifications**: User verification and password reset
-- **Modern UI**: Built with Tailwind CSS and Flowbite components
-- **Responsive Design**: Mobile-first responsive interface
+- **Cloudflare-Style UI**: Modern interface inspired by Cloudflare's design language
+- **Responsive Design**: Mobile-first responsive interface with modal components
+- **Enhanced UX**: Smooth animations, hover states, and intuitive navigation
 - **Admin Dashboard**: Comprehensive management interface
 
 ## Project Structure
@@ -68,13 +69,15 @@ A Django-based Web Application Firewall (WAF) proxy system that provides securit
 
 ## UI Framework
 
-This project uses **Flowbite** components built on **Tailwind CSS** for a modern, responsive user interface:
+This project features a **Cloudflare-inspired design** built with modern web technologies:
 
 - **Tailwind CSS**: Utility-first CSS framework for rapid UI development
 - **Flowbite**: Professional UI components library
+- **Cloudflare Design Language**: Orange and blue color scheme with Inter font
 - **Responsive Design**: Mobile-first approach with responsive breakpoints
-- **Dark Mode Ready**: Built with dark mode support capabilities
-- **Accessibility**: WCAG compliant components
+- **Modal Components**: Interactive modals for actions like adding sites
+- **Enhanced UX**: Smooth transitions, hover states, and modern interactions
+- **Accessibility**: WCAG compliant components with proper ARIA labels
 
 ## Configuration
 
