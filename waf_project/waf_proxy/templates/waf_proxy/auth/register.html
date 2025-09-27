@@ -1,0 +1,535 @@
+{% extends "waf_proxy/auth/layout.html" %}
+
+{% block auth_title %}Create Account{% endblock %}
+{% block auth_subtitle %}Join WAF Security and protect your websites{% endblock %}
+
+{% block auth_content %}
+<!-- Messages -->
+{% if messages %}
+    <div class="auth-messages">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                {% elif message.tags == 'success' %}
+                    <i class="fas fa-check-circle"></i>
+                {% else %}
+                    <i class="fas fa-info-circle"></i>
+                {% endif %}
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Google OAuth Registration -->
+{% load socialaccount %}
+<div class="social-login">
+    <a href="{% provider_login_url 'google' %}" class="btn btn-google">
+        <i class="fab fa-google"></i>
+        Continue with Google
+    </a>
+</div>
+
+<div class="login-divider">
+    <span>or create account with email</span>
+</div>
+
+<!-- Registration Form -->
+<form method="post" class="auth-form-content">
+    {% csrf_token %}
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label for="first_name" class="form-label">First Name</label>
+            <input 
+                type="text" 
+                id="first_name" 
+                name="first_name" 
+                class="form-control" 
+                placeholder="First name"
+                required
+                autocomplete="given-name"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input 
+                type="text" 
+                id="last_name" 
+                name="last_name" 
+                class="form-control" 
+                placeholder="Last name"
+                required
+                autocomplete="family-name"
+            >
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="email" class="form-label">Email Address</label>
+        <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control" 
+            placeholder="Enter your email address"
+            required
+            autocomplete="email"
+        >
+    </div>
+
+    <div class="form-group">
+        <label for="company_name" class="form-label">
+            Company Name <span class="optional">(Optional)</span>
+        </label>
+        <input 
+            type="text" 
+            id="company_name" 
+            name="company_name" 
+            class="form-control" 
+            placeholder="Enter your company name"
+            autocomplete="organization"
+        >
+    </div>
+
+    <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <div class="password-input">
+            <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                class="form-control" 
+                placeholder="Create a strong password"
+                required
+                autocomplete="new-password"
+                minlength="8"
+            >
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                <i class="fas fa-eye" id="password-eye"></i>
+            </button>
+        </div>
+        <div class="password-strength">
+            <div class="strength-bar">
+                <div class="strength-fill" id="strength-fill"></div>
+            </div>
+            <div class="strength-text" id="strength-text">Password strength</div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="password_confirm" class="form-label">Confirm Password</label>
+        <div class="password-input">
+            <input 
+                type="password" 
+                id="password_confirm" 
+                name="password_confirm" 
+                class="form-control" 
+                placeholder="Confirm your password"
+                required
+                autocomplete="new-password"
+            >
+            <button type="button" class="password-toggle" onclick="togglePassword('password_confirm')">
+                <i class="fas fa-eye" id="password_confirm-eye"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- CAPTCHA -->
+    <div class="form-group">
+        <div class="captcha-container">
+            <div class="simple-captcha" id="simple-captcha">
+                <div class="captcha-question">
+                    <span id="captcha-num1">7</span> + <span id="captcha-num2">4</span> = ?
+                </div>
+                <input type="number" id="captcha-answer" name="captcha_answer" class="form-control" placeholder="Answer" required style="width: 100px;">
+                <button type="button" class="captcha-refresh" onclick="refreshCaptcha()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div class="captcha-help">
+                <small>Complete this simple math problem to verify you're human</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="checkbox-label">
+            <input type="checkbox" name="agree_terms" required>
+            <span class="checkmark"></span>
+            I agree to the <a href="#" class="auth-link">Terms of Service</a> and <a href="#" class="auth-link">Privacy Policy</a>
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-user-plus"></i>
+        Create Account
+    </button>
+</form>
+{% endblock %}
+
+{% block auth_footer %}
+<div class="auth-footer">
+    <p>
+        Already have an account? 
+        <a href="{% url 'login' %}" class="auth-link">Sign In</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-messages {
+    margin-bottom: var(--spacing-4);
+}
+
+.social-login {
+    margin-bottom: var(--spacing-4);
+}
+
+.btn-google {
+    background-color: #4285f4;
+    color: var(--text-white);
+    border: 1px solid #4285f4;
+    width: 100%;
+    justify-content: center;
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-google:hover {
+    background-color: #3367d6;
+    border-color: #3367d6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.login-divider {
+    position: relative;
+    text-align: center;
+    margin: var(--spacing-4) 0;
+}
+
+.login-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.login-divider span {
+    background-color: var(--bg-primary);
+    padding: 0 var(--spacing-3);
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.auth-form-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-3);
+}
+
+.optional {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.password-input {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: var(--spacing-3);
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--spacing-1);
+    border-radius: var(--border-radius);
+}
+
+.password-toggle:hover {
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
+}
+
+.password-strength {
+    margin-top: var(--spacing-2);
+}
+
+.strength-bar {
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-1);
+}
+
+.strength-fill {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-text {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.strength-weak .strength-fill {
+    width: 25%;
+    background: var(--error-red);
+}
+
+.strength-fair .strength-fill {
+    width: 50%;
+    background: var(--warning-yellow);
+}
+
+.strength-good .strength-fill {
+    width: 75%;
+    background: var(--secondary-blue);
+}
+
+.strength-strong .strength-fill {
+    width: 100%;
+    background: var(--success-green);
+}
+
+/* CAPTCHA Styles */
+.captcha-container {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-3);
+}
+
+.simple-captcha {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
+}
+
+.captcha-question {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 16px;
+    min-width: 80px;
+}
+
+.captcha-refresh {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: var(--spacing-2);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.captcha-refresh:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.captcha-help {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    line-height: 1.4;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 3px;
+    position: relative;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 5px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Google OAuth is now properly configured via django-allauth
+
+// CAPTCHA functionality
+let captchaAnswer = 11; // Initial answer for 7 + 4
+
+function refreshCaptcha() {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    
+    document.getElementById('captcha-num1').textContent = num1;
+    document.getElementById('captcha-num2').textContent = num2;
+    document.getElementById('captcha-answer').value = '';
+    
+    captchaAnswer = num1 + num2;
+}
+
+function togglePassword(fieldId) {
+    const passwordInput = document.getElementById(fieldId);
+    const passwordEye = document.getElementById(fieldId + '-eye');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordEye.className = 'fas fa-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        passwordEye.className = 'fas fa-eye';
+    }
+}
+
+// Password strength checker
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const strengthBar = document.getElementById('strength-fill');
+    const strengthText = document.getElementById('strength-text');
+    const strengthContainer = strengthBar.parentElement.parentElement;
+    
+    // Remove existing classes
+    strengthContainer.classList.remove('strength-weak', 'strength-fair', 'strength-good', 'strength-strong');
+    
+    if (password.length === 0) {
+        strengthText.textContent = 'Password strength';
+        return;
+    }
+    
+    let score = 0;
+    
+    // Length check
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    
+    // Character variety checks
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    
+    // Set strength based on score
+    if (score <= 2) {
+        strengthContainer.classList.add('strength-weak');
+        strengthText.textContent = 'Weak password';
+    } else if (score <= 3) {
+        strengthContainer.classList.add('strength-fair');
+        strengthText.textContent = 'Fair password';
+    } else if (score <= 4) {
+        strengthContainer.classList.add('strength-good');
+        strengthText.textContent = 'Good password';
+    } else {
+        strengthContainer.classList.add('strength-strong');
+        strengthText.textContent = 'Strong password';
+    }
+});
+
+// Password confirmation check
+document.getElementById('password_confirm').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirm = this.value;
+    
+    if (confirm.length > 0) {
+        if (password === confirm) {
+            this.style.borderColor = 'var(--success-green)';
+        } else {
+            this.style.borderColor = 'var(--error-red)';
+        }
+    } else {
+        this.style.borderColor = 'var(--border-color)';
+    }
+});
+
+// Auto-focus on first field
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('first_name').focus();
+    
+    // Initialize CAPTCHA
+    refreshCaptcha();
+    
+    // Validate form on submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const userAnswer = parseInt(document.getElementById('captcha-answer').value);
+        
+        if (userAnswer !== captchaAnswer) {
+            e.preventDefault();
+            alert('Please solve the math problem correctly.');
+            document.getElementById('captcha-answer').focus();
+            return false;
+        }
+    });
+    
+    // Real-time CAPTCHA validation
+    document.getElementById('captcha-answer').addEventListener('input', function() {
+        const userAnswer = parseInt(this.value);
+        
+        if (userAnswer === captchaAnswer) {
+            this.style.borderColor = 'var(--success-green)';
+        } else if (this.value.length > 0) {
+            this.style.borderColor = 'var(--error-red)';
+        } else {
+            this.style.borderColor = 'var(--border-color)';
+        }
+    });
+});
+</script>
+{% endblock %}

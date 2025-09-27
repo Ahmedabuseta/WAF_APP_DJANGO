@@ -1,0 +1,326 @@
+{% extends "waf_proxy/auth/layout.html" %}
+
+{% block auth_title %}Email Verified!{% endblock %}
+{% block auth_subtitle %}Your account is now active{% endblock %}
+
+{% block auth_content %}
+<div class="verification-success">
+    <div class="success-animation">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="success-particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+    
+    <h3>Account Successfully Verified!</h3>
+    
+    <p>Congratulations! Your email address has been verified and your WAF Security account is now active.</p>
+    
+    <div class="user-info">
+        <div class="user-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="user-details">
+            <h4>{{ user.first_name }} {{ user.last_name }}</h4>
+            <p>{{ user.email }}</p>
+            <span class="user-badge">
+                <i class="fas fa-check-circle"></i>
+                Verified Account
+            </span>
+        </div>
+    </div>
+    
+    <div class="features-preview">
+        <h4><i class="fas fa-star"></i> What's Next?</h4>
+        <div class="feature-list">
+            <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Add your first protected site</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-cog"></i>
+                <span>Configure security rules</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Monitor threat activity</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-bell"></i>
+                <span>Set up security alerts</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-rocket"></i>
+            Access Dashboard
+        </a>
+        <a href="{% url 'site_list' %}" class="btn btn-secondary">
+            <i class="fas fa-plus"></i>
+            Add First Site
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.verification-success {
+    text-align: center;
+}
+
+.success-animation {
+    position: relative;
+    margin-bottom: 32px;
+}
+
+.success-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--success), #059669);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: white;
+    animation: successPop 0.6s ease-out;
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes successPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-particles {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: particleFloat 2s ease-out infinite;
+}
+
+.particle:nth-child(1) {
+    top: 20%;
+    left: 20%;
+    animation-delay: 0.1s;
+}
+
+.particle:nth-child(2) {
+    top: 20%;
+    right: 20%;
+    animation-delay: 0.3s;
+}
+
+.particle:nth-child(3) {
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 0.5s;
+}
+
+.particle:nth-child(4) {
+    bottom: 20%;
+    right: 20%;
+    animation-delay: 0.7s;
+}
+
+.particle:nth-child(5) {
+    top: 50%;
+    left: 10%;
+    animation-delay: 0.9s;
+}
+
+@keyframes particleFloat {
+    0% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-40px);
+    }
+}
+
+.verification-success h3 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-size: 1.75rem;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.verification-success p {
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    font-size: 16px;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: var(--border-radius);
+    margin-bottom: 32px;
+    animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    background: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+}
+
+.user-details {
+    flex: 1;
+    text-align: left;
+}
+
+.user-details h4 {
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 18px;
+}
+
+.user-details p {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--success);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.features-preview {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 32px;
+    text-align: left;
+    animation: fadeInUp 0.8s ease-out 0.8s both;
+}
+
+.features-preview h4 {
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.feature-list {
+    display: grid;
+    gap: 12px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.feature-item i {
+    color: var(--accent-blue);
+    width: 20px;
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.8s ease-out 1s both;
+}
+
+.btn-lg {
+    padding: 16px 32px;
+    font-size: 16px;
+}
+
+@media (max-width: 480px) {
+    .user-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .user-details {
+        text-align: center;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

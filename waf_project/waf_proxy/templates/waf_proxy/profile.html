@@ -1,0 +1,193 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block title %}Profile - WAF Security{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">👤 User Profile</h1>
+                <a href="{% url 'user_settings' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 80px; height: 80px; font-size: 2rem;">
+                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                </div>
+                            </div>
+                            <h4>{{ user.first_name }} {{ user.last_name }}</h4>
+                            <p class="text-muted mb-2">{{ user.email }}</p>
+                            <span class="badge bg-{% if user.user_type == 'admin' %}danger{% else %}primary{% endif %}">
+                                {{ user.user_type|title }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">📊 Account Stats</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if user.user_type == 'customer' %}
+                                <div class="mb-2">
+                                    <strong>Sites:</strong> {{ user.site_set.count }}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Active Sites:</strong> {{ user.site_set.filter.is_active.count }}
+                                </div>
+                            {% endif %}
+                            <div class="mb-2">
+                                <strong>Member Since:</strong> {{ user.created_at|date:"M Y" }}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Last Login:</strong> 
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"M d, Y" }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </div>
+                            <div class="mb-0">
+                                <strong>Email Verified:</strong> 
+                                {% if user.is_email_verified %}
+                                    <span class="text-success">✓ Yes</span>
+                                {% else %}
+                                    <span class="text-danger">✗ No</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">📋 Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">First Name</label>
+                                        <p class="mb-0">{{ user.first_name|default:"Not provided" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Last Name</label>
+                                        <p class="mb-0">{{ user.last_name|default:"Not provided" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Email Address</label>
+                                        <p class="mb-0">{{ user.email }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Phone Number</label>
+                                        <p class="mb-0">{{ user.phone|default:"Not provided" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">Company</label>
+                                        <p class="mb-0">{{ user.company_name|default:"Not provided" }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted">User Type</label>
+                                        <p class="mb-0">{{ user.user_type|title }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-end">
+                                <a href="{% url 'user_settings' %}" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Edit Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if user.user_type == 'customer' %}
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">🌐 Recent Sites</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if user.site_set.all %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Site Name</th>
+                                                <th>Domain</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for site in user.site_set.all|slice:":5" %}
+                                            <tr>
+                                                <td>{{ site.name }}</td>
+                                                <td>{{ site.domain }}</td>
+                                                <td>
+                                                    {% if site.is_active %}
+                                                        <span class="badge bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Inactive</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ site.created_at|date:"M d" }}</td>
+                                                <td>
+                                                    <a href="{% url 'site_detail' site.id %}" class="btn btn-sm btn-outline-primary">
+                                                        View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                {% if user.site_set.count > 5 %}
+                                <div class="text-center">
+                                    <a href="{% url 'site_list' %}" class="btn btn-sm btn-outline-secondary">
+                                        View All Sites ({{ user.site_set.count }})
+                                    </a>
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted mb-0">No sites created yet.</p>
+                                <a href="{% url 'site_add' %}" class="btn btn-sm btn-primary mt-2">
+                                    <i class="fas fa-plus"></i> Add Your First Site
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

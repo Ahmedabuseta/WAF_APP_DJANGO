@@ -1,0 +1,373 @@
+{% extends 'waf_proxy/base.html' %}
+{% load static %}
+
+{% block title %}API Documentation - WAF Security{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">📚 API Documentation</h1>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <!-- Navigation -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">📋 Contents</h6>
+                        </div>
+                        <div class="card-body">
+                            <nav class="nav nav-pills flex-column">
+                                <a class="nav-link" href="#overview">Overview</a>
+                                <a class="nav-link" href="#authentication">Authentication</a>
+                                <a class="nav-link" href="#endpoints">Endpoints</a>
+                                <a class="nav-link" href="#webhooks">Webhooks</a>
+                                <a class="nav-link" href="#rate-limits">Rate Limits</a>
+                                <a class="nav-link" href="#examples">Examples</a>
+                                <a class="nav-link" href="#sdks">SDKs</a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-9">
+                    <!-- API Documentation Content -->
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Overview -->
+                            <section id="overview" class="mb-5">
+                                <h2>🔰 Overview</h2>
+                                <p>
+                                    The WAF Security API provides programmatic access to manage your web application firewall 
+                                    settings, view security logs, and configure protection rules.
+                                </p>
+                                
+                                <div class="alert alert-info">
+                                    <strong>Base URL:</strong> <code>https://api.wafsecurity.com/v1</code><br>
+                                    <strong>Current Version:</strong> v1.0<br>
+                                    <strong>Format:</strong> JSON
+                                </div>
+                            </section>
+
+                            <!-- Authentication -->
+                            <section id="authentication" class="mb-5">
+                                <h2>🔐 Authentication</h2>
+                                <p>All API requests require authentication using an API key. Include your API key in the request headers:</p>
+                                
+                                <pre class="bg-light p-3 rounded"><code>Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json</code></pre>
+
+                                <div class="alert alert-warning">
+                                    <strong>Security Note:</strong> Keep your API keys secure and never expose them in client-side code.
+                                </div>
+                            </section>
+
+                            <!-- Endpoints -->
+                            <section id="endpoints" class="mb-5">
+                                <h2>📡 API Endpoints</h2>
+                                
+                                <!-- Sites -->
+                                <h3 class="mt-4">Sites Management</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Endpoint</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-primary">GET</span></td>
+                                                <td><code>/sites</code></td>
+                                                <td>List all sites</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-success">POST</span></td>
+                                                <td><code>/sites</code></td>
+                                                <td>Create a new site</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">GET</span></td>
+                                                <td><code>/sites/{id}</code></td>
+                                                <td>Get site details</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-warning">PUT</span></td>
+                                                <td><code>/sites/{id}</code></td>
+                                                <td>Update site configuration</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-danger">DELETE</span></td>
+                                                <td><code>/sites/{id}</code></td>
+                                                <td>Delete a site</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Rules -->
+                                <h3 class="mt-4">Security Rules</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Endpoint</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-primary">GET</span></td>
+                                                <td><code>/rules</code></td>
+                                                <td>List security rules</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-success">POST</span></td>
+                                                <td><code>/rules</code></td>
+                                                <td>Create a new rule</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">GET</span></td>
+                                                <td><code>/sites/{site_id}/rules</code></td>
+                                                <td>Get rules for a site</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-success">POST</span></td>
+                                                <td><code>/sites/{site_id}/rules</code></td>
+                                                <td>Add rule to site</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Logs -->
+                                <h3 class="mt-4">Security Logs</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Endpoint</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-primary">GET</span></td>
+                                                <td><code>/logs</code></td>
+                                                <td>Get security logs</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">GET</span></td>
+                                                <td><code>/sites/{site_id}/logs</code></td>
+                                                <td>Get logs for specific site</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">GET</span></td>
+                                                <td><code>/stats</code></td>
+                                                <td>Get security statistics</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <!-- Webhooks -->
+                            <section id="webhooks" class="mb-5">
+                                <h2>🔗 Webhooks</h2>
+                                <p>Configure webhooks to receive real-time notifications about security events:</p>
+                                
+                                <h4>Available Events:</h4>
+                                <ul>
+                                    <li><code>security.threat_detected</code> - When a threat is blocked</li>
+                                    <li><code>security.site_added</code> - When a new site is protected</li>
+                                    <li><code>security.rule_triggered</code> - When a security rule is triggered</li>
+                                    <li><code>security.anomaly_detected</code> - When unusual patterns are detected</li>
+                                </ul>
+
+                                <h4>Webhook Payload Example:</h4>
+                                <pre class="bg-light p-3 rounded"><code>{
+  "event": "security.threat_detected",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "site_id": 123,
+  "data": {
+    "threat_type": "SQL_INJECTION",
+    "client_ip": "192.168.1.100",
+    "blocked": true,
+    "rule_name": "SQL Injection Protection"
+  }
+}</code></pre>
+                            </section>
+
+                            <!-- Rate Limits -->
+                            <section id="rate-limits" class="mb-5">
+                                <h2>⚡ Rate Limits</h2>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Plan</th>
+                                                <th>Requests per Hour</th>
+                                                <th>Burst Limit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Free</td>
+                                                <td>1,000</td>
+                                                <td>100</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Pro</td>
+                                                <td>10,000</td>
+                                                <td>500</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Enterprise</td>
+                                                <td>100,000</td>
+                                                <td>1,000</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </section>
+
+                            <!-- Examples -->
+                            <section id="examples" class="mb-5">
+                                <h2>💡 Code Examples</h2>
+                                
+                                <h4>Create a New Site</h4>
+                                <pre class="bg-light p-3 rounded"><code>curl -X POST https://api.wafsecurity.com/v1/sites \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Website",
+    "domain": "example.com",
+    "backend_url": "https://my-server.com"
+  }'</code></pre>
+
+                                <h4>Add Security Rule</h4>
+                                <pre class="bg-light p-3 rounded"><code>curl -X POST https://api.wafsecurity.com/v1/rules \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Block SQL Injection",
+    "pattern": "(union|select|drop|insert)",
+    "rule_type": "SQL_INJECTION",
+    "action": "BLOCK"
+  }'</code></pre>
+
+                                <h4>Get Security Logs</h4>
+                                <pre class="bg-light p-3 rounded"><code>curl -X GET "https://api.wafsecurity.com/v1/logs?limit=50&status=BLOCKED" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+                            </section>
+
+                            <!-- SDKs -->
+                            <section id="sdks" class="mb-5">
+                                <h2>🛠️ SDKs and Libraries</h2>
+                                <p>Official SDKs are available for popular programming languages:</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5>🐍 Python</h5>
+                                                <pre class="bg-light p-2 rounded small"><code>pip install wafsecurity-python</code></pre>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">Documentation</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5>📄 JavaScript</h5>
+                                                <pre class="bg-light p-2 rounded small"><code>npm install wafsecurity-js</code></pre>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">Documentation</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5>🐘 PHP</h5>
+                                                <pre class="bg-light p-2 rounded small"><code>composer require wafsecurity/php-sdk</code></pre>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">Documentation</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5>☕ Java</h5>
+                                                <pre class="bg-light p-2 rounded small"><code>Maven Central available</code></pre>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">Documentation</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Contact -->
+                            <section class="mb-5">
+                                <h2>📞 Support</h2>
+                                <p>Need help with the API? Contact our support team:</p>
+                                <ul>
+                                    <li>📧 Email: <a href="mailto:api-support@wafsecurity.com">api-support@wafsecurity.com</a></li>
+                                    <li>📚 Documentation: <a href="#">https://docs.wafsecurity.com</a></li>
+                                    <li>💬 Community: <a href="#">Discord Server</a></li>
+                                </ul>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Smooth scrolling for navigation links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+
+// Highlight active section in navigation
+window.addEventListener('scroll', function() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    let current = '';
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (pageYOffset >= sectionTop - 60) {
+            current = section.getAttribute('id');
+        }
+    });
+    
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}

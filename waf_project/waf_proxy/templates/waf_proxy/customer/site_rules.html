@@ -1,0 +1,246 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+
+{% block page_title %}Security Rules{% endblock %}
+{% block page_subtitle %}Manage protection rules for {{ site.domain }}{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    <a href="{% url 'site_rule_add' site.id %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Custom Rule
+    </a>
+    <a href="{% url 'site_rules_import' site.id %}" class="btn btn-outline-secondary">
+        <i class="fas fa-download"></i> Import Rules
+    </a>
+    <a href="{% url 'site_rules_export' site.id %}" class="btn btn-outline-secondary">
+        <i class="fas fa-upload"></i> Export Rules
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- Active Rules -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle text-success me-2"></i>Active Rules
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if active_rules %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rule Name</th>
+                                    <th>Type</th>
+                                    <th>Pattern</th>
+                                    <th>Action</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for site_rule in active_rules %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ site_rule.rule.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ site_rule.rule.rule_type }}</span>
+                                    </td>
+                                    <td>
+                                        <code class="small">{{ site_rule.rule.pattern|truncatechars:40 }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if site_rule.rule.action == 'BLOCK' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ site_rule.rule.action }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if site_rule.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <form method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="site_rule_id" value="{{ site_rule.id }}">
+                                                <button type="submit" name="toggle_rule" class="btn btn-sm {% if site_rule.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}" title="{% if site_rule.is_active %}Disable{% else %}Enable{% endif %}">
+                                                    {% if site_rule.is_active %}
+                                                        <i class="fas fa-pause"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-play"></i>
+                                                    {% endif %}
+                                                </button>
+                                            </form>
+                                            <a href="{% url 'site_rule_edit' site.id site_rule.id %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'site_rule_delete' site.id site_rule.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No active rules</h5>
+                        <p class="text-muted">Add rules from the available list to protect your site.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Available Rules -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle text-info me-2"></i>Available Rules
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if available_rules %}
+                    <div class="list-group list-group-flush">
+                        {% for rule in available_rules %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ rule.name }}</h6>
+                                    <p class="text-muted small mb-1">{{ rule.rule_type }} - {{ rule.action }}</p>
+                                    <small class="text-muted">{{ rule.description|truncatechars:60 }}</small>
+                                </div>
+                                <form method="post" class="ms-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="rule_id" value="{{ rule.id }}">
+                                    <button type="submit" name="add_rule" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <p class="text-muted mb-0">All available rules are already added!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rule Statistics Summary -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-info"></i> Rule Statistics Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h3 class="text-primary">{{ active_rules.count }}</h3>
+                            <p class="mb-0">Active Rules</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h3 class="text-info">{{ available_rules.count }}</h3>
+                            <p class="mb-0">Available Rules</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h3 class="text-warning">0</h3>
+                            <p class="mb-0">Blocks Today</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h3 class="text-success">{{ site.is_active|yesno:"Protected,Unprotected" }}</h3>
+                            <p class="mb-0">Site Status</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-item {
+    padding: 1rem;
+}
+
+.btn-group .btn {
+    border-radius: 0.375rem;
+    margin-right: 0.25rem;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+code {
+    background-color: #f8f9fa;
+    color: #e83e8c;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+}
+</style>
+
+<script>
+// Add confirmation for destructive actions
+document.querySelectorAll('button[name="toggle_rule"]').forEach(button => {
+    button.addEventListener('click', function(e) {
+        const isActive = this.classList.contains('btn-outline-warning');
+        const action = isActive ? 'disable' : 'enable';
+        
+        if (isActive && !confirm(`Are you sure you want to ${action} this security rule?`)) {
+            e.preventDefault();
+        }
+    });
+});
+
+// Add tooltips to action buttons
+document.querySelectorAll('[title]').forEach(element => {
+    element.setAttribute('data-bs-toggle', 'tooltip');
+});
+
+// Initialize Bootstrap tooltips
+if (typeof bootstrap !== 'undefined') {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+</script>
+{% endblock %}

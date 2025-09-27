@@ -1,0 +1,373 @@
+{% extends "waf_proxy/auth/layout.html" %}
+
+{% block auth_title %}Sign In{% endblock %}
+{% block auth_subtitle %}Enter your credentials to access your account{% endblock %}
+
+{% block auth_content %}
+<!-- Messages -->
+{% if messages %}
+    <div class="auth-messages">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                {% elif message.tags == 'success' %}
+                    <i class="fas fa-check-circle"></i>
+                {% else %}
+                    <i class="fas fa-info-circle"></i>
+                {% endif %}
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- Google OAuth Login -->
+{% load socialaccount %}
+<div class="social-login">
+    <a href="{% provider_login_url 'google' %}" class="btn btn-google">
+        <i class="fab fa-google"></i>
+        Continue with Google
+    </a>
+</div>
+
+<div class="login-divider">
+    <span>or sign in with email</span>
+</div>
+
+<!-- Login Form -->
+<form method="post" class="auth-form-content">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="email" class="form-label">
+            Email Address
+        </label>
+        <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control" 
+            placeholder="Enter your email"
+            required
+            autocomplete="email"
+        >
+    </div>
+
+    <div class="form-group">
+        <label for="password" class="form-label">
+            Password
+        </label>
+        <div class="password-input">
+            <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                class="form-control" 
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+            >
+            <button type="button" class="password-toggle" onclick="togglePassword()">
+                <i class="fas fa-eye" id="password-eye"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- CAPTCHA -->
+    <div class="form-group">
+        <div class="captcha-container">
+            <div class="simple-captcha" id="simple-captcha">
+                <div class="captcha-question">
+                    <span id="captcha-num1">5</span> + <span id="captcha-num2">3</span> = ?
+                </div>
+                <input type="number" id="captcha-answer" name="captcha_answer" class="form-control" placeholder="Answer" required style="width: 100px;">
+                <button type="button" class="captcha-refresh" onclick="refreshCaptcha()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div class="captcha-help">
+                <small>Complete this simple math problem to verify you're human</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-options">
+        <label class="checkbox-label">
+            <input type="checkbox" name="remember_me">
+            <span class="checkmark"></span>
+            Remember me
+        </label>
+        <a href="{% url 'forgot_password' %}" class="auth-link">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt"></i>
+        Sign In
+    </button>
+</form>
+{% endblock %}
+
+{% block auth_footer %}
+<div class="auth-footer">
+    <p>
+        Don't have an account? 
+        <a href="{% url 'register' %}" class="auth-link">Create Account</a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-messages {
+    margin-bottom: var(--spacing-4);
+}
+
+.social-login {
+    margin-bottom: var(--spacing-4);
+}
+
+.btn-google {
+    background-color: #4285f4;
+    color: var(--text-white);
+    border: 1px solid #4285f4;
+    width: 100%;
+    justify-content: center;
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-google:hover {
+    background-color: #3367d6;
+    border-color: #3367d6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.login-divider {
+    position: relative;
+    text-align: center;
+    margin: var(--spacing-4) 0;
+}
+
+.login-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.login-divider span {
+    background-color: var(--bg-primary);
+    padding: 0 var(--spacing-3);
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.auth-form-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.password-input {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: var(--spacing-3);
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--spacing-1);
+    border-radius: var(--border-radius);
+}
+
+.password-toggle:hover {
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
+}
+
+/* CAPTCHA Styles */
+.captcha-container {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-3);
+}
+
+.simple-captcha {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
+}
+
+.captcha-question {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 16px;
+    min-width: 80px;
+}
+
+.captcha-refresh {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: var(--spacing-2);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.captcha-refresh:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.captcha-help {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 3px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 5px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+@media (max-width: 640px) {
+    .form-options {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        align-items: flex-start;
+    }
+    
+    .simple-captcha {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+    
+    .captcha-question {
+        min-width: auto;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Google OAuth is now properly configured via django-allauth
+
+// CAPTCHA functionality
+let captchaAnswer = 8; // Initial answer for 5 + 3
+
+function refreshCaptcha() {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    
+    document.getElementById('captcha-num1').textContent = num1;
+    document.getElementById('captcha-num2').textContent = num2;
+    document.getElementById('captcha-answer').value = '';
+    
+    captchaAnswer = num1 + num2;
+}
+
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const passwordEye = document.getElementById('password-eye');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordEye.className = 'fas fa-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        passwordEye.className = 'fas fa-eye';
+    }
+}
+
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('email').focus();
+    
+    // Initialize CAPTCHA
+    refreshCaptcha();
+    
+    // Validate form on submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const userAnswer = parseInt(document.getElementById('captcha-answer').value);
+        
+        if (userAnswer !== captchaAnswer) {
+            e.preventDefault();
+            alert('Please solve the math problem correctly.');
+            document.getElementById('captcha-answer').focus();
+            return false;
+        }
+    });
+    
+    // Real-time CAPTCHA validation
+    document.getElementById('captcha-answer').addEventListener('input', function() {
+        const userAnswer = parseInt(this.value);
+        
+        if (userAnswer === captchaAnswer) {
+            this.style.borderColor = 'var(--success-green)';
+        } else if (this.value.length > 0) {
+            this.style.borderColor = 'var(--error-red)';
+        } else {
+            this.style.borderColor = 'var(--border-color)';
+        }
+    });
+});
+</script>
+{% endblock %}

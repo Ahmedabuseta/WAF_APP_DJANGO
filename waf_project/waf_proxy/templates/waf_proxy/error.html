@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ error_title }} - WAF Security</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --warning-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --info-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+        
+        body {
+            background: var(--gradient-bg);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2c3e50;
+        }
+        
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .error-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .error-header {
+            background: {% if error_code == "403" %}var(--warning-gradient){% elif error_code == "429" %}var(--info-gradient){% else %}var(--gradient-bg){% endif %};
+            color: {% if error_code == "429" %}#2c3e50{% else %}white{% endif %};
+            padding: 3rem 2rem;
+            position: relative;
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .error-message {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .error-body {
+            padding: 3rem 2rem;
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            {% if error_code == "403" %}
+                color: #dc3545;
+            {% elif error_code == "429" %}
+                color: #fd7e14;
+            {% else %}
+                color: #6c757d;
+            {% endif %}
+        }
+        
+        .error-details {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .error-suggestions {
+            margin: 2rem 0;
+        }
+        
+        .suggestion {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: left;
+            border-left: 4px solid 
+            {% if error_code == "403" %}
+                #dc3545
+            {% elif error_code == "429" %}
+                #fd7e14
+            {% else %}
+                #6c757d
+            {% endif %};
+        }
+        
+        .suggestion h6 {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .suggestion p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-bg);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            background: transparent;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .retry-info {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .countdown {
+            font-weight: 700;
+            color: #1976d2;
+        }
+        
+        @media (max-width: 768px) {
+            .error-container {
+                padding: 1rem;
+            }
+            
+            .error-header {
+                padding: 2rem 1rem;
+            }
+            
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+            }
+            
+            .error-body {
+                padding: 2rem 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-header">
+                <div class="error-code">{{ error_code }}</div>
+                <h1 class="error-title">{{ error_title }}</h1>
+                <p class="error-message">{{ error_message }}</p>
+            </div>
+            
+            <div class="error-body">
+                <div class="error-icon">
+                    {% if error_code == "403" %}
+                        <i class="fas fa-ban"></i>
+                    {% elif error_code == "429" %}
+                        <i class="fas fa-hourglass-half"></i>
+                    {% else %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% endif %}
+                </div>
+                
+                {% if error_code == "403" %}
+                    <div class="error-suggestions">
+                        <div class="suggestion">
+                            <h6><i class="fas fa-user-check"></i> Check Your Permissions</h6>
+                            <p>Make sure you have the necessary permissions to access this resource.</p>
+                        </div>
+                        <div class="suggestion">
+                            <h6><i class="fas fa-sign-in-alt"></i> Login Required</h6>
+                            <p>You may need to log in to access this content.</p>
+                        </div>
+                        <div class="suggestion">
+                            <h6><i class="fas fa-envelope"></i> Contact Administrator</h6>
+                            <p>If you believe you should have access, contact the site administrator.</p>
+                        </div>
+                    </div>
+                    
+                {% elif error_code == "429" %}
+                    <div class="retry-info">
+                        <p><strong>Rate Limit Exceeded</strong></p>
+                        <p>You can try again in <span class="countdown" id="countdown">{{ retry_after|default:"60" }}</span> seconds.</p>
+                    </div>
+                    
+                    <div class="error-suggestions">
+                        <div class="suggestion">
+                            <h6><i class="fas fa-clock"></i> Wait Before Retrying</h6>
+                            <p>Please wait for the rate limit to reset before making another request.</p>
+                        </div>
+                        <div class="suggestion">
+                            <h6><i class="fas fa-tachometer-alt"></i> Reduce Request Frequency</h6>
+                            <p>Try to space out your requests to avoid hitting rate limits.</p>
+                        </div>
+                        <div class="suggestion">
+                            <h6><i class="fas fa-user-plus"></i> Upgrade Your Plan</h6>
+                            <p>Consider upgrading to a higher tier for increased rate limits.</p>
+                        </div>
+                    </div>
+                    
+                {% else %}
+                    <div class="error-suggestions">
+                        <div class="suggestion">
+                            <h6><i class="fas fa-redo"></i> Try Again</h6>
+                            <p>This might be a temporary issue. Please try again in a few moments.</p>
+                        </div>
+                        <div class="suggestion">
+                            <h6><i class="fas fa-home"></i> Return Home</h6>
+                            <p>Go back to the homepage and navigate from there.</p>
+                        </div>
+                        <div class="suggestion">
+                            <h6><i class="fas fa-envelope"></i> Contact Support</h6>
+                            <p>If the problem persists, please contact our support team.</p>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="action-buttons">
+                    {% if error_code == "429" %}
+                        <button class="btn btn-primary" id="retry-btn" disabled onclick="window.location.reload()">
+                            <i class="fas fa-redo"></i> <span id="retry-text">Retry in {{ retry_after|default:"60" }}s</span>
+                        </button>
+                    {% else %}
+                        <button class="btn btn-primary" onclick="window.location.reload()">
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                    {% endif %}
+                    
+                    <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left"></i> Go Back
+                    </button>
+                    
+                    <a href="/" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> Homepage
+                    </a>
+                </div>
+                
+                <div class="mt-4">
+                    <small class="text-muted">
+                        If you continue to experience issues, please contact support with error code: {{ error_code }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        {% if error_code == "429" %}
+        // Countdown timer for rate limit
+        let timeLeft = {{ retry_after|default:"60" }};
+        const countdownEl = document.getElementById('countdown');
+        const retryBtn = document.getElementById('retry-btn');
+        const retryText = document.getElementById('retry-text');
+        
+        const timer = setInterval(function() {
+            timeLeft--;
+            countdownEl.textContent = timeLeft;
+            retryText.textContent = `Retry in ${timeLeft}s`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                retryBtn.disabled = false;
+                retryBtn.classList.add('btn-success');
+                retryBtn.classList.remove('btn-primary');
+                retryText.textContent = 'Retry Now';
+                countdownEl.textContent = '0';
+            }
+        }, 1000);
+        {% endif %}
+        
+        // Add click animation to buttons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

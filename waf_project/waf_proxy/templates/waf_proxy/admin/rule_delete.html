@@ -1,0 +1,103 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block title %}Delete Rule: {{ rule.name }} - WAF Security{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">⚠️ Delete Security Rule</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    
+                    <h4 class="text-center mb-3">Are you sure?</h4>
+                    
+                    <p class="text-center text-muted mb-4">
+                        You are about to permanently delete the security rule:
+                    </p>
+                    
+                    <div class="alert alert-light border text-center">
+                        <strong>{{ rule.name }}</strong><br>
+                        <small class="text-muted">{{ rule.get_rule_type_display }} - {{ rule.get_action_display }}</small>
+                    </div>
+                    
+                    <div class="alert alert-danger">
+                        <strong>This action cannot be undone!</strong><br>
+                        <small>
+                            Deleting this rule will:
+                            <ul class="mb-0 mt-2">
+                                <li>Remove the rule from all sites using it</li>
+                                <li>Stop protection provided by this rule</li>
+                                <li>Delete all associated rule statistics</li>
+                                <li>Potentially expose sites to security threats</li>
+                            </ul>
+                        </small>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Rule Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Type:</strong></div>
+                                <div class="col-sm-8">{{ rule.get_rule_type_display }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Action:</strong></div>
+                                <div class="col-sm-8">{{ rule.get_action_display }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Pattern:</strong></div>
+                                <div class="col-sm-8"><code class="small">{{ rule.pattern|truncatechars:50 }}</code></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Scope:</strong></div>
+                                <div class="col-sm-8">
+                                    {% if rule.is_global %}
+                                        <span class="text-info">Global Rule</span>
+                                    {% else %}
+                                        <span class="text-secondary">Site-specific</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Status:</strong></div>
+                                <div class="col-sm-8">
+                                    {% if rule.is_active %}
+                                        <span class="text-success">Active</span>
+                                    {% else %}
+                                        <span class="text-warning">Inactive</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4"><strong>Created:</strong></div>
+                                <div class="col-sm-8">{{ rule.created_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" class="text-center mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-center gap-3">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Yes, Delete Rule
+                            </button>
+                            <a href="{% url 'rule_edit' rule.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

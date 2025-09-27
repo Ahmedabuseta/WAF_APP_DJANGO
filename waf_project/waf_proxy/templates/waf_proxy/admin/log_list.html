@@ -1,0 +1,242 @@
+{% extends 'waf_proxy/base.html' %}
+
+{% block title %}Request Logs - WAF Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="fas fa-list text-primary me-2"></i>Request Logs
+    </h1>
+    <div class="btn-group">
+        <button class="btn btn-outline-primary">
+            <i class="fas fa-filter me-2"></i>Filter
+        </button>
+        <button class="btn btn-outline-success">
+            <i class="fas fa-download me-2"></i>Export
+        </button>
+        <button class="btn btn-outline-danger">
+            <i class="fas fa-trash me-2"></i>Clear Old Logs
+        </button>
+    </div>
+</div>
+
+<!-- Filter Options -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" name="status">
+                    <option value="">All Status</option>
+                    <option value="ALLOWED">Allowed</option>
+                    <option value="BLOCKED">Blocked</option>
+                    <option value="RATE_LIMITED">Rate Limited</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" name="method">
+                    <option value="">All Methods</option>
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm" name="ip" placeholder="IP Address">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm" name="domain" placeholder="Domain">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if page_obj %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Site</th>
+                            <th>IP Address</th>
+                            <th>Method</th>
+                            <th>URL</th>
+                            <th>User Agent</th>
+                            <th>Status</th>
+                            <th>Rule</th>
+                            <th>Response Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in page_obj %}
+                        <tr class="{% if log.status == 'BLOCKED' %}table-danger{% elif log.status == 'RATE_LIMITED' %}table-warning{% endif %}">
+                            <td>
+                                <small>{{ log.timestamp|date:"M d H:i:s" }}</small>
+                            </td>
+                            <td>
+                                <i class="fas fa-globe text-primary me-1"></i>
+                                <small>{{ log.site.domain }}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ log.ip_address }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ log.method }}</span>
+                            </td>
+                            <td>
+                                <small class="text-muted" title="{{ log.url }}">{{ log.url|truncatechars:40 }}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted" title="{{ log.user_agent }}">{{ log.user_agent|truncatechars:30 }}</small>
+                            </td>
+                            <td>
+                                <span class="badge {% if log.status == 'BLOCKED' %}bg-danger{% elif log.status == 'ALLOWED' %}bg-success{% elif log.status == 'RATE_LIMITED' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ log.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if log.rule_matched %}
+                                    <small class="text-muted">{{ log.rule_matched.name }}</small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.response_time %}
+                                    <small class="text-muted">{{ log.response_time|floatformat:0 }}ms</small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Logs pagination" class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    ({{ page_obj.paginator.count }} total logs)
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-list fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Request Logs</h4>
+            <p class="text-muted">Request logs will appear here as traffic flows through the WAF.</p>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Add Rule Modal -->
+<div class="modal fade" id="addRuleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Security Rule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Rule Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="rule_type" class="form-label">Rule Type</label>
+                                <select class="form-select" id="rule_type" name="rule_type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="SQL_INJECTION">SQL Injection</option>
+                                    <option value="XSS">Cross-Site Scripting (XSS)</option>
+                                    <option value="PATH_TRAVERSAL">Path Traversal</option>
+                                    <option value="USER_AGENT">User Agent Filter</option>
+                                    <option value="IP_WHITELIST">IP Whitelist</option>
+                                    <option value="IP_BLACKLIST">IP Blacklist</option>
+                                    <option value="RATE_LIMIT">Rate Limiting</option>
+                                    <option value="CUSTOM">Custom Pattern</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pattern" class="form-label">Pattern/Rule</label>
+                        <textarea class="form-control" id="pattern" name="pattern" rows="3" required placeholder="Enter regex pattern or rule definition"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2" placeholder="Describe what this rule does"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="action" class="form-label">Action</label>
+                                <select class="form-select" id="action" name="action" required>
+                                    <option value="BLOCK">Block Request</option>
+                                    <option value="LOG">Log Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="priority" class="form-label">Priority</label>
+                                <input type="number" class="form-control" id="priority" name="priority" value="100" min="1" max="1000">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="is_global" name="is_global" checked>
+                                <label class="form-check-label" for="is_global">
+                                    Global Rule
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="add_rule" class="btn btn-primary">Create Rule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

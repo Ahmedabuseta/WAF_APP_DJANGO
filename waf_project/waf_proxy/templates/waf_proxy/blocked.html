@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Request Blocked - WAF Security</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            rel="stylesheet"
+        />
+        {% load static %}
+        <style>
+            :root {
+                --gradient-bg: linear-gradient(
+                    135deg,
+                    #667eea 0%,
+                    #764ba2 100%
+                );
+                --danger-gradient: linear-gradient(
+                    135deg,
+                    #ff6b6b 0%,
+                    #ee5a52 100%
+                );
+                --warning-gradient: linear-gradient(
+                    135deg,
+                    #feca57 0%,
+                    #ff9ff3 100%
+                );
+            }
+
+            body {
+                background: var(--gradient-bg);
+                min-height: 100vh;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                color: #2c3e50;
+                position: relative;
+                overflow-x: hidden;
+            }
+
+            /* Video Background */
+            .video-background {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                overflow: hidden;
+            }
+
+            .video-background video {
+                min-width: 100%;
+                min-height: 100%;
+                width: auto;
+                height: auto;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                opacity: 0.3;
+                filter: blur(1px);
+            }
+
+            .video-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 107, 107, 0.8) 0%,
+                    rgba(238, 90, 82, 0.9) 50%,
+                    rgba(102, 126, 234, 0.8) 100%
+                );
+                z-index: -1;
+            }
+
+            /* Video Controls */
+            .video-controls {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+                display: none; /* Hidden by default, shown when video loads */
+                gap: 10px;
+            }
+
+            .video-loading {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100;
+                color: white;
+                text-align: center;
+                font-size: 1.2rem;
+            }
+
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-top: 4px solid white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 10px;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .video-btn {
+                background: rgba(0, 0, 0, 0.7);
+                color: white;
+                border: none;
+                padding: 10px;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+            }
+
+            .video-btn:hover {
+                background: rgba(0, 0, 0, 0.9);
+                transform: scale(1.1);
+            }
+
+            .video-btn.muted {
+                background: rgba(220, 53, 69, 0.8);
+            }
+
+            .blocked-container {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .blocked-card {
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(15px);
+                border-radius: 25px;
+                box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+                max-width: 900px;
+                width: 100%;
+                overflow: hidden;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .blocked-header {
+                background: var(--danger-gradient);
+                color: white;
+                padding: 3rem 2rem;
+                text-align: center;
+                position: relative;
+            }
+
+            .blocked-header::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="2" fill="white" opacity="0.1"/><circle cx="80" cy="80" r="1" fill="white" opacity="0.1"/><circle cx="40" cy="60" r="1.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+                opacity: 0.3;
+            }
+
+            .blocked-icon {
+                font-size: 4rem;
+                margin-bottom: 1rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .blocked-title {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin-bottom: 0.5rem;
+                position: relative;
+                z-index: 1;
+            }
+
+            .blocked-subtitle {
+                font-size: 1.2rem;
+                opacity: 0.9;
+                position: relative;
+                z-index: 1;
+            }
+
+            .blocked-body {
+                padding: 3rem 2rem;
+            }
+
+            .info-card {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 1.5rem;
+                margin-bottom: 2rem;
+                border-left: 5px solid #dc3545;
+            }
+
+            .info-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .info-row:last-child {
+                border-bottom: none;
+            }
+
+            .info-label {
+                font-weight: 600;
+                color: #495057;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .info-value {
+                color: #6c757d;
+                text-align: right;
+                word-break: break-all;
+                max-width: 60%;
+            }
+
+            .suggestions-card {
+                background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+                border-radius: 15px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .suggestions-title {
+                color: #1976d2;
+                font-weight: 700;
+                font-size: 1.25rem;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .suggestion-item {
+                background: white;
+                border-radius: 10px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                display: flex;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .suggestion-item:last-child {
+                margin-bottom: 0;
+            }
+
+            .suggestion-icon {
+                color: #1976d2;
+                font-size: 1.25rem;
+                margin-top: 0.25rem;
+            }
+
+            .suggestion-content h6 {
+                color: #1976d2;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+            }
+
+            .suggestion-content p {
+                color: #6c757d;
+                margin: 0;
+                font-size: 0.9rem;
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn-primary {
+                background: var(--gradient-bg);
+                border: none;
+                padding: 0.75rem 2rem;
+                border-radius: 50px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            }
+
+            .btn-outline-secondary {
+                border: 2px solid #6c757d;
+                color: #6c757d;
+                padding: 0.75rem 2rem;
+                border-radius: 50px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .btn-outline-secondary:hover {
+                background: #6c757d;
+                color: white;
+                transform: translateY(-2px);
+            }
+
+            .contact-info {
+                text-align: center;
+                margin-top: 2rem;
+                padding-top: 2rem;
+                border-top: 1px solid #e9ecef;
+            }
+
+            .contact-info p {
+                color: #6c757d;
+                margin-bottom: 0.5rem;
+            }
+
+            .contact-link {
+                color: #1976d2;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+            .contact-link:hover {
+                text-decoration: underline;
+            }
+
+            @media (max-width: 768px) {
+                .blocked-container {
+                    padding: 1rem;
+                }
+
+                .blocked-header {
+                    padding: 2rem 1rem;
+                }
+
+                .blocked-title {
+                    font-size: 2rem;
+                }
+
+                .blocked-body {
+                    padding: 2rem 1rem;
+                }
+
+                .info-row {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.5rem;
+                }
+
+                .info-value {
+                    max-width: 100%;
+                    text-align: left;
+                }
+
+                .action-buttons {
+                    flex-direction: column;
+                }
+
+                .suggestion-item {
+                    flex-direction: column;
+                    text-align: center;
+                }
+            }
+
+            .pulse {
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Video Background -->
+        <div class="video-background">
+            <video id="securityVideo" autoplay loop playsinline>
+                <!-- Primary video sources in order of preference -->
+
+                <source
+                    src="{% static 'waf_proxy/videos/sec.mp4' %}"
+                    type="video/mp4"
+                />
+
+                <!-- Fallback for browsers that don't support video -->
+                <div
+                    class="video-fallback"
+                    style="
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(
+                            45deg,
+                            #ff6b6b 0%,
+                            #ee5a52 50%,
+                            #667eea 100%
+                        );
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 2rem;
+                    "
+                >
+                    <i class="fas fa-shield-alt fa-3x"></i>
+                </div>
+            </video>
+        </div>
+
+        <!-- Video Overlay -->
+        <div class="video-overlay"></div>
+
+        <!-- Video Loading Indicator -->
+        <div class="video-loading" id="videoLoading">
+            <div class="loading-spinner"></div>
+            <p>Loading security video...</p>
+        </div>
+
+        <!-- Video Controls -->
+        <div class="video-controls">
+            <button class="video-btn" id="muteBtn" title="Toggle Sound">
+                <i class="fas fa-volume-up" id="volumeIcon"></i>
+            </button>
+            <button class="video-btn" id="playBtn" title="Play/Pause">
+                <i class="fas fa-pause" id="playIcon"></i>
+            </button>
+        </div>
+
+        <div class="blocked-container">
+            <div class="blocked-card">
+                <div class="blocked-header">
+                    <div class="blocked-icon pulse">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h1 class="blocked-title">Request Blocked</h1>
+                    <p class="blocked-subtitle">
+                        Your request has been blocked by our Web Application
+                        Firewall
+                    </p>
+                </div>
+
+                <div class="blocked-body">
+                    <div class="info-card">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Block Reason
+                            </div>
+                            <div class="info-value">{{ block_reason }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-shield-alt"></i>
+                                Triggered Rule
+                            </div>
+                            <div class="info-value">{{ rule_name }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-clock"></i>
+                                Timestamp
+                            </div>
+                            <div class="info-value">
+                                {{ timestamp|date:"M d, Y H:i:s" }} UTC
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-globe"></i>
+                                Site
+                            </div>
+                            <div class="info-value">{{ site_domain }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-link"></i>
+                                Blocked URL
+                            </div>
+                            <div class="info-value">
+                                {{ blocked_url|truncatechars:50 }}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Your IP
+                            </div>
+                            <div class="info-value">{{ client_ip }}</div>
+                        </div>
+                    </div>
+
+                    <div class="suggestions-card">
+                        <h4 class="suggestions-title">
+                            <i class="fas fa-lightbulb"></i>
+                            What can you do?
+                        </h4>
+
+                        <div class="suggestion-item">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-redo"></i>
+                            </div>
+                            <div class="suggestion-content">
+                                <h6>Try Again</h6>
+                                <p>
+                                    Wait a moment and try your request again.
+                                    Sometimes temporary issues can trigger
+                                    security rules.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="suggestion-item">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-edit"></i>
+                            </div>
+                            <div class="suggestion-content">
+                                <h6>Modify Your Request</h6>
+                                <p>
+                                    Check your input for special characters,
+                                    scripts, or suspicious patterns that might
+                                    trigger security filters.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="suggestion-item">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div class="suggestion-content">
+                                <h6>Contact Support</h6>
+                                <p>
+                                    If you believe this is a false positive,
+                                    contact the website administrator with the
+                                    details above.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="suggestion-item">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="suggestion-content">
+                                <h6>Return to Homepage</h6>
+                                <p>
+                                    Navigate back to the main website and try
+                                    accessing the content through a different
+                                    path.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button
+                            class="btn btn-primary"
+                            onclick="window.history.back()"
+                        >
+                            <i class="fas fa-arrow-left"></i> Go Back
+                        </button>
+                        <button
+                            class="btn btn-primary"
+                            onclick="window.location.reload()"
+                        >
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-home"></i> Homepage
+                        </a>
+                    </div>
+
+                    <div class="contact-info">
+                        <p><strong>Need immediate assistance?</strong></p>
+                        <p>
+                            Contact support:
+                            <a
+                                href="mailto:support@{{ site_domain }}"
+                                class="contact-link"
+                                >support@{{ site_domain }}</a
+                            >
+                        </p>
+                        <p>
+                            <small
+                                >Reference ID: WAF-{{ timestamp|date:"YmdHis"
+                                }}-{{ client_ip|last }}</small
+                            >
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{% static 'waf_proxy/js/video-fallback.js' %}"></script>
+        <script>
+            // Video functionality
+            const video = document.getElementById("securityVideo");
+            const muteBtn = document.getElementById("muteBtn");
+            const playBtn = document.getElementById("playBtn");
+            const volumeIcon = document.getElementById("volumeIcon");
+            const playIcon = document.getElementById("playIcon");
+            const videoLoading = document.getElementById("videoLoading");
+
+            // Initialize video with sound after user interaction
+            let audioEnabled = false;
+            let userInteracted = false;
+
+            // Enable audio on first user interaction
+            function enableAudio() {
+                if (!userInteracted) {
+                    userInteracted = true;
+                    video.muted = false;
+                    audioEnabled = true;
+                    volumeIcon.className = "fas fa-volume-up";
+                    muteBtn.classList.remove("muted");
+
+                    // Try to play with audio
+                    video.play().catch((e) => {
+                        console.log("Autoplay with audio failed:", e);
+                        video.muted = true;
+                        audioEnabled = false;
+                        volumeIcon.className = "fas fa-volume-mute";
+                        muteBtn.classList.add("muted");
+                    });
+                }
+            }
+
+            // Add event listeners for user interaction
+            document.addEventListener("click", enableAudio);
+            document.addEventListener("keydown", enableAudio);
+            document.addEventListener("touchstart", enableAudio);
+
+            // Mute/Unmute button
+            muteBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                if (video.muted) {
+                    video.muted = false;
+                    volumeIcon.className = "fas fa-volume-up";
+                    muteBtn.classList.remove("muted");
+                } else {
+                    video.muted = true;
+                    volumeIcon.className = "fas fa-volume-mute";
+                    muteBtn.classList.add("muted");
+                }
+            });
+
+            // Play/Pause button
+            playBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                if (video.paused) {
+                    video.play();
+                    playIcon.className = "fas fa-pause";
+                } else {
+                    video.pause();
+                    playIcon.className = "fas fa-play";
+                }
+            });
+
+            // Video event listeners
+            video.addEventListener("play", function () {
+                playIcon.className = "fas fa-pause";
+            });
+
+            video.addEventListener("pause", function () {
+                playIcon.className = "fas fa-play";
+            });
+
+            // Enhanced video loading and error handling
+            video.addEventListener("error", function (e) {
+                console.log("Video error:", e);
+                console.log("Video error details:", {
+                    code: video.error ? video.error.code : "Unknown",
+                    message: video.error
+                        ? video.error.message
+                        : "Unknown error",
+                    networkState: video.networkState,
+                    readyState: video.readyState,
+                });
+                // Hide loading indicator and video controls if video fails to load
+                videoLoading.style.display = "none";
+                document.querySelector(".video-controls").style.display =
+                    "none";
+            });
+
+            video.addEventListener("loadstart", function () {
+                console.log("Video loading started");
+            });
+
+            video.addEventListener("loadedmetadata", function () {
+                console.log(
+                    "Video metadata loaded - Duration:",
+                    video.duration,
+                    "seconds",
+                );
+                console.log(
+                    "Video dimensions:",
+                    video.videoWidth + "x" + video.videoHeight,
+                );
+            });
+
+            video.addEventListener("canplay", function () {
+                console.log("Video can start playing");
+                // Hide loading indicator and show video controls when video is ready
+                videoLoading.style.display = "none";
+                document.querySelector(".video-controls").style.display =
+                    "flex";
+            });
+
+            video.addEventListener("loadeddata", function () {
+                console.log("Video data loaded successfully");
+                videoLoading.style.display = "none";
+            });
+
+            video.addEventListener("stalled", function () {
+                console.log("Video loading stalled");
+            });
+
+            // Timeout fallback if video doesn't load within 5 seconds
+            setTimeout(function () {
+                if (video.readyState === 0) {
+                    console.log(
+                        "Video failed to load within timeout, triggering fallback",
+                    );
+                    videoLoading.style.display = "none";
+                    video.dispatchEvent(new Event("error"));
+                }
+            }, 5000);
+
+            // Try to start with audio after a short delay
+            setTimeout(() => {
+                if (video && !video.paused) {
+                    video.muted = false;
+                    video.play().catch((e) => {
+                        // If audio autoplay fails, keep muted
+                        video.muted = true;
+                    });
+                }
+            }, 1000);
+
+            // Auto-refresh after 30 seconds if user doesn't interact
+            let refreshTimer = setTimeout(function () {
+                if (
+                    confirm("Would you like to try accessing the page again?")
+                ) {
+                    window.location.reload();
+                }
+            }, 30000);
+
+            // Clear timer if user interacts with page
+            document.addEventListener("click", function () {
+                clearTimeout(refreshTimer);
+            });
+
+            document.addEventListener("keydown", function () {
+                clearTimeout(refreshTimer);
+            });
+
+            // Add some interactive feedback
+            document.querySelectorAll(".btn").forEach((btn) => {
+                btn.addEventListener("click", function () {
+                    this.style.transform = "scale(0.95)";
+                    setTimeout(() => {
+                        this.style.transform = "";
+                    }, 150);
+                });
+            });
+
+            // Show video info on load
+            video.addEventListener("loadeddata", function () {
+                console.log("Security alert video loaded");
+                console.log("Duration:", video.duration + " seconds");
+                console.log(
+                    "Video dimensions:",
+                    video.videoWidth + "x" + video.videoHeight,
+                );
+            });
+
+            // Add visual feedback when video is interacted with
+            video.addEventListener("click", function () {
+                // Create ripple effect
+                const ripple = document.createElement("div");
+                ripple.style.cssText = `
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.6);
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+                left: ${event.clientX - 25}px;
+                top: ${event.clientY - 25}px;
+                width: 50px;
+                height: 50px;
+                z-index: 1000;
+            `;
+
+                document.body.appendChild(ripple);
+
+                setTimeout(() => {
+                    document.body.removeChild(ripple);
+                }, 600);
+            });
+
+            // Add ripple animation
+            const style = document.createElement("style");
+            style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+            document.head.appendChild(style);
+        </script>
+    </body>
+</html>

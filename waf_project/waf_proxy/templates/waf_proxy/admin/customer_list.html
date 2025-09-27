@@ -1,0 +1,230 @@
+{% extends "waf_proxy/dashboard/layout.html" %}
+
+{% block page_title %}Customers{% endblock %}
+{% block page_subtitle %}Manage customer accounts and access{% endblock %}
+
+{% block page_actions %}
+<a href="#" class="btn btn-primary">
+    <i class="fas fa-user-plus"></i>
+    Add Customer
+</a>
+<a href="#" class="btn btn-secondary">
+    <i class="fas fa-download"></i>
+    Export List
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-section">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="section-title">All Customers</h3>
+            <div class="search-box">
+                <input type="text" class="form-control" placeholder="Search customers..." style="width: 250px;">
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Company</th>
+                        <th>Sites</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <div class="customer-name">{{ customer.first_name }} {{ customer.last_name }}</div>
+                                        <div class="customer-email">{{ customer.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="company-name">{{ customer.company_name|default:"—" }}</span>
+                            </td>
+                            <td>
+                                <span class="site-count">{{ customer.site_set.count }}</span>
+                            </td>
+                            <td>
+                                <div class="status-cell">
+                                    <div class="status-dot {% if customer.is_active %}active{% else %}inactive{% endif %}"></div>
+                                    <span class="badge badge-{% if customer.is_active %}success{% else %}warning{% endif %}">
+                                        {% if customer.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="join-date">{{ customer.created_at|date:"M d, Y" }}</span>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="#" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                        View
+                                    </a>
+                                    <a href="#" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                        Edit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="table-empty">
+                                    <i class="fas fa-users"></i>
+                                    <h4>No Customers Found</h4>
+                                    <p>No customers have registered yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+            <div class="card-footer">
+                <div class="pagination-info">
+                    Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} customers
+                </div>
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-chevron-left"></i>
+                            Previous
+                        </a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary btn-sm">
+                            Next
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.search-box {
+    position: relative;
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.customer-avatar {
+    width: 36px;
+    height: 36px;
+    background-color: var(--bg-tertiary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+}
+
+.customer-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-1);
+}
+
+.customer-email {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.company-name {
+    color: var(--text-secondary);
+}
+
+.site-count {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.join-date {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.page-info {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.pagination-info {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        align-items: stretch;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+    
+    .search-box .form-control {
+        width: 100% !important;
+    }
+    
+    .card-footer {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        align-items: stretch;
+    }
+    
+    .pagination {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

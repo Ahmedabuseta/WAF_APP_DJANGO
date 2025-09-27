@@ -1,0 +1,332 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block page_title %}Add Custom Rule{% endblock %}
+{% block page_subtitle %}Create a custom security rule for {{ site.domain }}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'site_rules' site.id %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left"></i> Back to Rules
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle text-primary"></i> Create Custom Rule
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="ruleForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="rule_name" class="form-label">Rule Name *</label>
+                        <input type="text" class="form-control" id="rule_name" name="rule_name" required>
+                        <div class="form-text">A descriptive name for this security rule</div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="rule_type" class="form-label">Rule Type *</label>
+                                <select class="form-control" id="rule_type" name="rule_type" required>
+                                    <option value="">Select rule type</option>
+                                    {% for value, label in rule_types %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="rule_action" class="form-label">Action *</label>
+                                <select class="form-control" id="rule_action" name="rule_action" required>
+                                    <option value="">Select action</option>
+                                    {% for value, label in actions %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="rule_pattern" class="form-label">Pattern/Regex *</label>
+                        <textarea class="form-control" id="rule_pattern" name="rule_pattern" rows="3" required
+                                  placeholder="Enter the pattern or regex to match against requests"></textarea>
+                        <div class="form-text">
+                            Use regex patterns to define what should be matched.
+                            <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#patternHelpModal">
+                                View examples
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="rule_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="rule_description" name="rule_description" rows="2"
+                                  placeholder="Describe what this rule does and why it's needed"></textarea>
+                    </div>
+                    
+                    <!-- Pattern Testing -->
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-header">
+                                <h6 class="mb-0">🧪 Test Your Pattern</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="test_input" class="form-label">Test Input:</label>
+                                    <input type="text" class="form-control" id="test_input" 
+                                           placeholder="Enter text to test against your pattern...">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="testPattern()">
+                                    <i class="fas fa-play"></i> Test Pattern
+                                </button>
+                                <div id="test_result" class="mt-3" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Rule
+                        </button>
+                        <a href="{% url 'site_rules' site.id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Rule Templates -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">⚡ Quick Templates</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% for template in rule_templates %}
+                    <button class="btn btn-sm btn-outline-primary" 
+                            onclick="loadTemplate('{{ template.name }}', '{{ template.pattern }}', '{{ template.type }}', '{{ template.description }}')">
+                        {{ template.name }}
+                    </button>
+                    {% endfor %}
+                </div>
+                
+                <hr>
+                
+                <div class="alert alert-info">
+                    <strong>💡 Tip:</strong>
+                    <p class="small mb-0">
+                        Click a template to auto-fill the form with pre-configured patterns for common security threats.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rule Types Guide -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">📚 Rule Types Guide</h6>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="ruleTypesAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sqlInjection">
+                                SQL Injection
+                            </button>
+                        </h2>
+                        <div id="sqlInjection" class="accordion-collapse collapse" data-bs-parent="#ruleTypesAccordion">
+                            <div class="accordion-body">
+                                <small>Protects against SQL injection attempts like UNION, SELECT, DROP commands.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#xss">
+                                XSS Protection
+                            </button>
+                        </h2>
+                        <div id="xss" class="accordion-collapse collapse" data-bs-parent="#ruleTypesAccordion">
+                            <div class="accordion-body">
+                                <small>Blocks script tags and malicious JavaScript injection attempts.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#pathTraversal">
+                                Path Traversal
+                            </button>
+                        </h2>
+                        <div id="pathTraversal" class="accordion-collapse collapse" data-bs-parent="#ruleTypesAccordion">
+                            <div class="accordion-body">
+                                <small>Prevents directory traversal attacks using ../ patterns.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#botDetection">
+                                Bot Detection
+                            </button>
+                        </h2>
+                        <div id="botDetection" class="accordion-collapse collapse" data-bs-parent="#ruleTypesAccordion">
+                            <div class="accordion-body">
+                                <small>Identifies and blocks automated bots and crawlers.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pattern Help Modal -->
+<div class="modal fade" id="patternHelpModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pattern Examples</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Common Attack Patterns:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Attack Type</th>
+                                <th>Pattern Example</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SQL Injection</td>
+                                <td><code>(union|select|insert|update|delete|drop)</code></td>
+                                <td>Matches SQL keywords</td>
+                            </tr>
+                            <tr>
+                                <td>XSS</td>
+                                <td><code>&lt;script.*?&gt;|javascript:|onload=</code></td>
+                                <td>Matches script tags and JS events</td>
+                            </tr>
+                            <tr>
+                                <td>Path Traversal</td>
+                                <td><code>\.\./|\.\.\\\</code></td>
+                                <td>Matches directory traversal patterns</td>
+                            </tr>
+                            <tr>
+                                <td>Command Injection</td>
+                                <td><code>(;|&amp;&amp;|\|\|).*?(ls|cat|wget|curl)</code></td>
+                                <td>Matches command chaining</td>
+                            </tr>
+                            <tr>
+                                <td>Bot Detection</td>
+                                <td><code>(bot|crawler|spider|scraper)</code></td>
+                                <td>Matches common bot user agents</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h6 class="mt-4">Regex Tips:</h6>
+                <ul class="small">
+                    <li><code>.*</code> - Matches any character sequence</li>
+                    <li><code>^</code> - Start of string</li>
+                    <li><code>$</code> - End of string</li>
+                    <li><code>\s+</code> - One or more whitespace characters</li>
+                    <li><code>(option1|option2)</code> - Either option1 or option2</li>
+                    <li><code>[a-z]</code> - Any lowercase letter</li>
+                    <li><code>\d+</code> - One or more digits</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadTemplate(name, pattern, type, description) {
+    document.getElementById('rule_name').value = name;
+    document.getElementById('rule_pattern').value = pattern;
+    document.getElementById('rule_type').value = type;
+    document.getElementById('rule_description').value = description;
+    
+    // Set default action based on type
+    const actionSelect = document.getElementById('rule_action');
+    if (type === 'sql_injection' || type === 'xss' || type === 'path_traversal') {
+        actionSelect.value = 'BLOCK';
+    } else if (type === 'custom') {
+        actionSelect.value = 'LOG';
+    } else {
+        actionSelect.value = 'BLOCK';
+    }
+}
+
+function testPattern() {
+    const pattern = document.getElementById('rule_pattern').value;
+    const testInput = document.getElementById('test_input').value;
+    const resultDiv = document.getElementById('test_result');
+    
+    if (!pattern || !testInput) {
+        alert('Please enter both pattern and test input');
+        return;
+    }
+    
+    try {
+        const regex = new RegExp(pattern, 'i');
+        const matches = regex.test(testInput);
+        
+        resultDiv.style.display = 'block';
+        if (matches) {
+            resultDiv.className = 'alert alert-danger mt-3';
+            resultDiv.innerHTML = '<strong>MATCH:</strong> This input would be blocked by the rule';
+        } else {
+            resultDiv.className = 'alert alert-success mt-3';
+            resultDiv.innerHTML = '<strong>NO MATCH:</strong> This input would be allowed';
+        }
+    } catch (e) {
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'alert alert-warning mt-3';
+        resultDiv.innerHTML = '<strong>Invalid regex pattern:</strong> ' + e.message;
+    }
+}
+
+// Real-time pattern validation
+document.getElementById('rule_pattern').addEventListener('input', function() {
+    const pattern = this.value;
+    const feedback = document.createElement('div');
+    
+    // Remove existing feedback
+    const existingFeedback = this.parentNode.querySelector('.pattern-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    if (pattern) {
+        try {
+            new RegExp(pattern);
+            feedback.className = 'pattern-feedback text-success small mt-1';
+            feedback.innerHTML = '<i class="fas fa-check"></i> Valid regex pattern';
+        } catch (e) {
+            feedback.className = 'pattern-feedback text-danger small mt-1';
+            feedback.innerHTML = '<i class="fas fa-times"></i> Invalid regex: ' + e.message;
+        }
+        this.parentNode.appendChild(feedback);
+    }
+});
+</script>
+{% endblock %}

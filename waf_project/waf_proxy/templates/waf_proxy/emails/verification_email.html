@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - {{ site_name }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0b1e 0%, #1a1d3a 100%);
+            color: #e8e9f3;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .email-card {
+            background: rgba(30, 35, 71, 0.9);
+            border-radius: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            overflow: hidden;
+            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
+        }
+        .email-header {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            padding: 32px;
+            text-align: center;
+        }
+        .email-logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .email-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .email-body {
+            padding: 32px;
+        }
+        .email-content h2 {
+            color: #e8e9f3;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        .email-content p {
+            color: #a8afd8;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .verify-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin: 24px 0;
+            transition: all 0.3s ease;
+        }
+        .verify-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+        }
+        .email-footer {
+            background: rgba(42, 47, 95, 0.5);
+            padding: 24px 32px;
+            text-align: center;
+            border-top: 1px solid rgba(61, 66, 117, 0.3);
+        }
+        .email-footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0;
+        }
+        .link-text {
+            color: #3b82f6;
+            word-break: break-all;
+            padding: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-card">
+            <div class="email-header">
+                <div class="email-logo">🛡️</div>
+                <h1 class="email-title">{{ site_name }}</h1>
+            </div>
+            
+            <div class="email-body">
+                <div class="email-content">
+                    <h2>Welcome to {{ site_name }}!</h2>
+                    <p>Hi {{ user.first_name|default:user.email }},</p>
+                    <p>Thank you for registering with {{ site_name }}. To complete your account setup and start protecting your websites, please verify your email address.</p>
+                    
+                    <p>Click the button below to verify your email:</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="{{ verification_url }}" class="verify-button">
+                            🔐 Verify Email Address
+                        </a>
+                    </div>
+                    
+                    <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+                    <div class="link-text">{{ verification_url }}</div>
+                    
+                    <p><strong>Important:</strong> This verification link will expire in {{ expires_hours }} hours for security reasons.</p>
+                    
+                    <p>If you didn't create an account with {{ site_name }}, you can safely ignore this email.</p>
+                    
+                    <p>Best regards,<br>The {{ site_name }} Team</p>
+                </div>
+            </div>
+            
+            <div class="email-footer">
+                <p>&copy; 2024 {{ site_name }}. All rights reserved.</p>
+                <p>This is an automated message, please do not reply to this email.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

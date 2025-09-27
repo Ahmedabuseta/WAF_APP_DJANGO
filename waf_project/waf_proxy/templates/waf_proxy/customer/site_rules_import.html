@@ -1,0 +1,271 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block page_title %}Import Rules{% endblock %}
+{% block page_subtitle %}Import security rules for {{ site.domain }}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'site_rules' site.id %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left"></i> Back to Rules
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Import Methods -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-download text-primary"></i> Import Security Rules
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Template Import -->
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="import_type" value="template">
+                    
+                    <h6 class="mb-3">📋 Import from Templates</h6>
+                    <p class="text-muted mb-3">Select a pre-configured rule set optimized for different types of websites:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="template-option">
+                                <div class="card h-100 border-primary">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shield-alt text-primary fa-2x mb-3"></i>
+                                        <h6>Basic Security</h6>
+                                        <p class="small text-muted">Essential protection against common attacks</p>
+                                        <ul class="small text-left">
+                                            <li>SQL Injection</li>
+                                            <li>XSS Protection</li>
+                                            <li>Path Traversal</li>
+                                        </ul>
+                                        <button type="submit" name="template_name" value="basic_security" class="btn btn-sm btn-primary">
+                                            Import (3 rules)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="template-option">
+                                <div class="card h-100 border-warning">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shield-virus text-warning fa-2x mb-3"></i>
+                                        <h6>Advanced Security</h6>
+                                        <p class="small text-muted">Comprehensive protection with advanced patterns</p>
+                                        <ul class="small text-left">
+                                            <li>Advanced SQL Injection</li>
+                                            <li>Advanced XSS</li>
+                                            <li>Command Injection</li>
+                                            <li>Bot Protection</li>
+                                        </ul>
+                                        <button type="submit" name="template_name" value="advanced_security" class="btn btn-sm btn-warning">
+                                            Import (5 rules)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="template-option">
+                                <div class="card h-100 border-success">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shopping-cart text-success fa-2x mb-3"></i>
+                                        <h6>E-commerce</h6>
+                                        <p class="small text-muted">Specialized rules for online stores</p>
+                                        <ul class="small text-left">
+                                            <li>Payment Protection</li>
+                                            <li>Price Manipulation</li>
+                                            <li>Cart Tampering</li>
+                                        </ul>
+                                        <button type="submit" name="template_name" value="ecommerce" class="btn btn-sm btn-success">
+                                            Import (3 rules)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <!-- Copy from Another Site -->
+                {% if other_sites %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="import_type" value="copy_site">
+                    
+                    <h6 class="mb-3">📋 Copy from Another Site</h6>
+                    <p class="text-muted mb-3">Copy rules from one of your existing sites:</p>
+                    
+                    <div class="mb-3">
+                        <label for="source_site_id" class="form-label">Source Site</label>
+                        <select class="form-control" id="source_site_id" name="source_site_id" required>
+                            <option value="">Select a site to copy rules from</option>
+                            {% for other_site in other_sites %}
+                                <option value="{{ other_site.id }}">
+                                    {{ other_site.domain }} ({{ other_site.siterule_set.filter.is_active.count }} rules)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-copy"></i> Copy Rules
+                    </button>
+                </form>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>No other sites:</strong> Create more sites to copy rules between them.
+                    </div>
+                {% endif %}
+                
+                <hr>
+                
+                <!-- File Import (Future Feature) -->
+                <div class="text-muted">
+                    <h6 class="mb-3">📁 Import from File</h6>
+                    <p class="small mb-3">Import rules from a JSON file (Coming Soon)</p>
+                    
+                    <div class="input-group">
+                        <input type="file" class="form-control" accept=".json" disabled>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="fas fa-upload"></i> Import
+                        </button>
+                    </div>
+                    <div class="form-text">Upload a JSON file exported from another site</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Import Guide -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📚 Import Guide</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="text-primary">Template Import</h6>
+                    <p class="small text-muted">
+                        Pre-configured rule sets designed for different website types. 
+                        These include tested patterns that provide good security without blocking legitimate traffic.
+                    </p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-warning">Site Copy</h6>
+                    <p class="small text-muted">
+                        Copy all active rules from another site you own. 
+                        Useful when setting up similar sites or testing configurations.
+                    </p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-info">File Import</h6>
+                    <p class="small text-muted">
+                        Import rules from a JSON file. Useful for backing up configurations 
+                        or sharing rule sets between environments.
+                    </p>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>⚠️ Important:</strong>
+                    <p class="small mb-0">
+                        Imported rules will be added to existing rules. 
+                        Duplicate rules will be skipped automatically.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Site Info -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">🌐 Current Site</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Domain:</strong> {{ site.domain }}
+                </div>
+                <div class="mb-2">
+                    <strong>Active Rules:</strong> {{ site.siterule_set.filter.is_active.count }}
+                </div>
+                <div class="mb-2">
+                    <strong>Total Rules:</strong> {{ site.siterule_set.count }}
+                </div>
+                <div class="mb-0">
+                    <strong>Status:</strong> 
+                    {% if site.is_active %}
+                        <span class="text-success">Active</span>
+                    {% else %}
+                        <span class="text-warning">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">⚡ Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'site_rule_add' site.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus"></i> Create Custom Rule
+                    </a>
+                    <a href="{% url 'site_rules_export' site.id %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-download"></i> Export Current Rules
+                    </a>
+                    <a href="{% url 'site_detail' site.id %}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-info-circle"></i> Site Overview
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.template-option {
+    margin-bottom: 1rem;
+}
+
+.template-option .card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.template-option .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.template-option ul {
+    text-align: left;
+    padding-left: 1rem;
+}
+</style>
+
+<script>
+// Add hover effects to template cards
+document.querySelectorAll('.template-option .card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.borderWidth = '2px';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.borderWidth = '1px';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,290 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block page_title %}Edit Rule{% endblock %}
+{% block page_subtitle %}Modify {{ site_rule.rule.name }} for {{ site.domain }}{% endblock %}
+
+{% block page_actions %}
+<div class="d-flex gap-2">
+    {% if not site_rule.rule.is_global %}
+    <a href="{% url 'site_rule_delete' site.id site_rule.id %}" class="btn btn-outline-danger">
+        <i class="fas fa-trash"></i> Delete Rule
+    </a>
+    {% endif %}
+    <a href="{% url 'site_rules' site.id %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Rules
+    </a>
+</div>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit text-primary"></i> Rule Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if site_rule.rule.is_global %}
+                        <!-- Global Rule - Limited Editing -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Global Rule:</strong> This is a system-wide rule. You can only modify site-specific settings.
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Rule Name</label>
+                            <input type="text" class="form-control" value="{{ site_rule.rule.name }}" disabled>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Rule Type</label>
+                                    <input type="text" class="form-control" value="{{ site_rule.rule.get_rule_type_display }}" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="custom_action" class="form-label">Action Override</label>
+                                    <select class="form-control" id="custom_action" name="custom_action">
+                                        <option value="">Use default ({{ site_rule.rule.get_action_display }})</option>
+                                        {% for value, label in actions %}
+                                            <option value="{{ value }}" {% if site_rule.custom_action == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Override the default action for this site</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Pattern</label>
+                            <textarea class="form-control" rows="3" disabled>{{ site_rule.rule.pattern }}</textarea>
+                        </div>
+                        
+                    {% else %}
+                        <!-- Custom Rule - Full Editing -->
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Custom Rule:</strong> Changes will affect only this site.
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="rule_name" class="form-label">Rule Name *</label>
+                            <input type="text" class="form-control" id="rule_name" name="rule_name" 
+                                   value="{{ site_rule.rule.name }}" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="rule_type" class="form-label">Rule Type *</label>
+                                    <select class="form-control" id="rule_type" name="rule_type" required>
+                                        {% for value, label in rule_types %}
+                                            <option value="{{ value }}" {% if site_rule.rule.rule_type == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="rule_action" class="form-label">Action *</label>
+                                    <select class="form-control" id="rule_action" name="rule_action" required>
+                                        {% for value, label in actions %}
+                                            <option value="{{ value }}" {% if site_rule.rule.action == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="rule_pattern" class="form-label">Pattern/Regex *</label>
+                            <textarea class="form-control" id="rule_pattern" name="rule_pattern" rows="3" required>{{ site_rule.rule.pattern }}</textarea>
+                            <div class="form-text">Use regex patterns to define what should be matched</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="rule_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="rule_description" name="rule_description" rows="2">{{ site_rule.rule.description }}</textarea>
+                        </div>
+                        
+                        <!-- Pattern Testing -->
+                        <div class="mb-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h6 class="mb-0">🧪 Test Pattern</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control" id="test_input" 
+                                               placeholder="Enter text to test against pattern...">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="testPattern()">
+                                        <i class="fas fa-play"></i> Test
+                                    </button>
+                                    <div id="test_result" class="mt-3" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                   {% if site_rule.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Rule is Active
+                            </label>
+                            <div class="form-text">Inactive rules are not enforced</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <a href="{% url 'site_rules' site.id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Rule Statistics -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📊 Rule Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Rule Type:</strong>
+                    <span class="badge bg-secondary">{{ site_rule.rule.get_rule_type_display }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Default Action:</strong>
+                    <span class="badge {% if site_rule.rule.action == 'BLOCK' %}bg-danger{% elif site_rule.rule.action == 'LOG' %}bg-warning{% else %}bg-success{% endif %}">
+                        {{ site_rule.rule.get_action_display }}
+                    </span>
+                </div>
+                
+                {% if site_rule.custom_action %}
+                <div class="mb-3">
+                    <strong>Site Override:</strong>
+                    <span class="badge bg-info">{{ site_rule.get_custom_action_display }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <strong>Status:</strong>
+                    {% if site_rule.is_active %}
+                        <span class="text-success">Active</span>
+                    {% else %}
+                        <span class="text-warning">Inactive</span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Scope:</strong>
+                    {% if site_rule.rule.is_global %}
+                        <span class="text-info">Global Rule</span>
+                    {% else %}
+                        <span class="text-secondary">Site-specific</span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Created:</strong>
+                    <small>{{ site_rule.created_at|date:"M d, Y H:i" }}</small>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <strong>Recent Matches:</strong>
+                    <div class="d-flex justify-content-between">
+                        <span>Last 24h:</span>
+                        <span class="badge bg-danger">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Last 7d:</span>
+                        <span class="badge bg-warning">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rule Testing -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">🔬 Advanced Testing</h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">Test different inputs against this rule</p>
+                
+                <div class="mb-3">
+                    <label class="form-label">Common Attack Strings:</label>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="testSample('1\' OR 1=1--')">
+                            Test SQL Injection
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="testSample('<script>alert(1)</script>')">
+                            Test XSS
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="testSample('../../../etc/passwd')">
+                            Test Path Traversal
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="testSample('normal user input')">
+                            Test Normal Input
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testPattern() {
+    const pattern = document.getElementById('rule_pattern').value;
+    const testInput = document.getElementById('test_input').value;
+    const resultDiv = document.getElementById('test_result');
+    
+    if (!pattern || !testInput) {
+        alert('Please enter both pattern and test input');
+        return;
+    }
+    
+    try {
+        const regex = new RegExp(pattern, 'i');
+        const matches = regex.test(testInput);
+        
+        resultDiv.style.display = 'block';
+        if (matches) {
+            resultDiv.className = 'alert alert-danger mt-3';
+            resultDiv.innerHTML = '<strong>MATCH:</strong> This input would be blocked by the rule';
+        } else {
+            resultDiv.className = 'alert alert-success mt-3';
+            resultDiv.innerHTML = '<strong>NO MATCH:</strong> This input would be allowed';
+        }
+    } catch (e) {
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'alert alert-warning mt-3';
+        resultDiv.innerHTML = '<strong>Invalid regex pattern:</strong> ' + e.message;
+    }
+}
+
+function testSample(input) {
+    document.getElementById('test_input').value = input;
+    testPattern();
+}
+</script>
+{% endblock %}

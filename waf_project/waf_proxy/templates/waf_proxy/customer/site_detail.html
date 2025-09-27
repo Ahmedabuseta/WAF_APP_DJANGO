@@ -1,0 +1,159 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block title %}{{ site.name }} - Site Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3">🌐 {{ site.name }}</h1>
+                    <p class="text-muted mb-0">{{ site.domain }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'site_edit' site.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'site_rules' site.id %}" class="btn btn-outline-info">
+                        <i class="fas fa-shield-alt"></i> Rules
+                    </a>
+                    <a href="{% url 'site_stats' site.id %}" class="btn btn-outline-success">
+                        <i class="fas fa-chart-bar"></i> Analytics
+                    </a>
+                    <a href="{% url 'site_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-primary">{{ total_requests }}</h2>
+                            <p class="mb-0">Total Requests (7 days)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-danger">{{ blocked_requests }}</h2>
+                            <p class="mb-0">Blocked Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-success">{{ active_rules_count }}</h2>
+                            <p class="mb-0">Active Rules</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            {% if site.is_active %}
+                                <h2 class="text-success">🟢</h2>
+                                <p class="mb-0">Status: Active</p>
+                            {% else %}
+                                <h2 class="text-warning">🟡</h2>
+                                <p class="mb-0">Status: Inactive</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">📋 Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_logs %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>IP</th>
+                                                <th>Method</th>
+                                                <th>Path</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for log in recent_logs %}
+                                            <tr>
+                                                <td>{{ log.timestamp|date:"M d, H:i" }}</td>
+                                                <td>{{ log.client_ip }}</td>
+                                                <td>{{ log.method }}</td>
+                                                <td class="text-truncate" style="max-width: 200px;">{{ log.path }}</td>
+                                                <td>
+                                                    {% if log.status == 'BLOCKED' %}
+                                                        <span class="badge bg-danger">{{ log.status }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">{{ log.status }}</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted mb-0">No recent activity</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">⚙️ Site Configuration</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Domain:</strong>
+                                <p class="mb-1">{{ site.domain }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>Backend URL:</strong>
+                                <p class="mb-1 small">{{ site.backend_url }}</p>
+                            </div>
+                            
+                            {% if site.description %}
+                            <div class="mb-3">
+                                <strong>Description:</strong>
+                                <p class="mb-1 small">{{ site.description }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <strong>Created:</strong>
+                                <p class="mb-1 small">{{ site.created_at|date:"M d, Y" }}</p>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'site_edit' site.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Edit Site
+                                </a>
+                                <a href="{% url 'site_rules' site.id %}" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-shield-alt"></i> Manage Rules
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

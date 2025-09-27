@@ -1,0 +1,200 @@
+{% extends "waf_proxy/auth/layout.html" %}
+
+{% block auth_title %}Check Your Email{% endblock %}
+{% block auth_subtitle %}We've sent you a verification link{% endblock %}
+
+{% block auth_content %}
+<div class="email-sent-content">
+    <div class="success-icon">
+        <i class="fas fa-envelope-open"></i>
+    </div>
+    
+    <h3>Email Sent Successfully!</h3>
+    
+    <p>We've sent a verification email to:</p>
+    <div class="email-display">
+        <i class="fas fa-envelope"></i>
+        <strong>{{ email }}</strong>
+    </div>
+    
+    <div class="instructions">
+        <h4><i class="fas fa-list-check"></i> Next Steps:</h4>
+        <ol>
+            <li>Check your email inbox (and spam folder)</li>
+            <li>Click the verification link in the email</li>
+            <li>Your account will be activated automatically</li>
+            <li>Sign in to access your dashboard</li>
+        </ol>
+    </div>
+    
+    <div class="help-section">
+        <h4><i class="fas fa-question-circle"></i> Didn't receive the email?</h4>
+        <div class="help-actions">
+            <form method="post" action="{% url 'resend_verification' %}" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="email" value="{{ email }}">
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i>
+                    Resend Email
+                </button>
+            </form>
+            
+            <a href="{% url 'register' %}" class="btn btn-outline">
+                <i class="fas fa-edit"></i>
+                Try Different Email
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block auth_footer %}
+<div class="auth-card-footer">
+    <p class="signup-text">
+        <a href="{% url 'login' %}" class="signup-link">
+            <i class="fas fa-arrow-left"></i>
+            Back to Sign In
+        </a>
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.email-sent-content {
+    text-align: center;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--success), #059669);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: white;
+    margin-bottom: 24px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+    }
+    50% { 
+        box-shadow: 0 0 0 20px rgba(34, 197, 94, 0);
+    }
+}
+
+.email-sent-content h3 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-size: 1.5rem;
+}
+
+.email-sent-content p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.email-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 12px 20px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 32px;
+    color: var(--accent-blue);
+    font-size: 16px;
+}
+
+.instructions {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: var(--border-radius-sm);
+    padding: 24px;
+    margin: 24px 0;
+    text-align: left;
+}
+
+.instructions h4 {
+    color: var(--success);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.instructions ol {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-secondary);
+}
+
+.instructions li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.help-section {
+    background: rgba(234, 179, 8, 0.1);
+    border: 1px solid rgba(234, 179, 8, 0.2);
+    border-radius: var(--border-radius-sm);
+    padding: 24px;
+    margin: 24px 0;
+    text-align: left;
+}
+
+.help-section h4 {
+    color: var(--warning);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.help-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-outline:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+@media (max-width: 480px) {
+    .help-actions {
+        flex-direction: column;
+    }
+    
+    .help-actions .btn,
+    .help-actions .btn-outline {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,18 @@
+<!-- Stats Card Component -->
+<div class="stats-card">
+    <div class="stats-content">
+        <div class="stats-icon {{ icon_color|default:'primary' }}">
+            <i class="{{ icon|default:'fas fa-chart-bar' }}"></i>
+        </div>
+        <div class="stats-info">
+            <div class="stats-value">{{ value|default:0 }}</div>
+            <div class="stats-label">{{ label|default:"Metric" }}</div>
+            {% if change %}
+                <div class="stats-change {{ change_type|default:'positive' }}">
+                    <i class="fas fa-arrow-{{ change_direction|default:'up' }}"></i>
+                    {{ change }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

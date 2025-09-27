@@ -1,0 +1,125 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block page_title %}Delete Rule{% endblock %}
+{% block page_subtitle %}Remove {{ site_rule.rule.name }} from {{ site.domain }}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'site_rules' site.id %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left"></i> Back to Rules
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Delete Security Rule
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-shield-alt text-danger" style="font-size: 4rem; opacity: 0.5;"></i>
+                </div>
+                
+                <h4 class="text-center mb-3">Are you sure you want to remove this rule?</h4>
+                
+                <div class="alert alert-light border">
+                    <div class="row">
+                        <div class="col-sm-3"><strong>Rule Name:</strong></div>
+                        <div class="col-sm-9">{{ site_rule.rule.name }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3"><strong>Type:</strong></div>
+                        <div class="col-sm-9">{{ site_rule.rule.get_rule_type_display }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3"><strong>Action:</strong></div>
+                        <div class="col-sm-9">
+                            {% if site_rule.custom_action %}
+                                {{ site_rule.get_custom_action_display }} (overridden)
+                            {% else %}
+                                {{ site_rule.rule.get_action_display }} (default)
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3"><strong>Pattern:</strong></div>
+                        <div class="col-sm-9"><code class="small">{{ site_rule.rule.pattern|truncatechars:100 }}</code></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3"><strong>Status:</strong></div>
+                        <div class="col-sm-9">
+                            {% if site_rule.is_active %}
+                                <span class="text-success">Active</span>
+                            {% else %}
+                                <span class="text-warning">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if site_rule.rule.is_global %}
+                    <div class="alert alert-info">
+                        <strong>Global Rule Impact:</strong><br>
+                        This will remove the rule from <strong>{{ site.domain }}</strong> only. 
+                        The rule will remain available for other sites.
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger">
+                        <strong>Custom Rule Impact:</strong><br>
+                        This will permanently delete the rule. This action cannot be undone.
+                        <ul class="mb-0 mt-2">
+                            <li>Rule will be removed from {{ site.domain }}</li>
+                            <li>All rule statistics will be lost</li>
+                            <li>Protection provided by this rule will stop</li>
+                        </ul>
+                    </div>
+                {% endif %}
+                
+                <!-- Recent Activity -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">📈 Recent Activity</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-primary">0</h4>
+                                <small class="text-muted">Matches Today</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-warning">0</h4>
+                                <small class="text-muted">This Week</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-info">0</h4>
+                                <small class="text-muted">Total</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post" class="text-center mt-4">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 
+                            {% if site_rule.rule.is_global %}
+                                Remove from Site
+                            {% else %}
+                                Delete Rule Permanently
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'site_rules' site.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

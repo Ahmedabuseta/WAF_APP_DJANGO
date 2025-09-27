@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Blocked Page - WAF Security</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-link:hover {
+            background: #c82333;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Blocked Page with Video</h1>
+        
+        <div class="info">
+            <h3>How to Test:</h3>
+            <ol>
+                <li>Click any of the test links below</li>
+                <li>You should be redirected to the blocked page</li>
+                <li>The blocked page should display with a video</li>
+                <li>If the local video doesn't load, it will fall back to external videos</li>
+                <li>If no videos load, you'll see the animated fallback content</li>
+            </ol>
+        </div>
+        
+        <h3>Test Links (should trigger blocked page):</h3>
+        
+        <a href="/blocked/?reason=Test%20Block&rule=Test%20Rule&site=testsite&url=http://example.com/test" class="test-link">
+            📹 Test Blocked Page
+        </a>
+        
+        <a href="/blocked/?reason=Directory%20traversal%20attack%20prevented&rule=Path%20Traversal%20Protection&url=http://example.com/../../../etc/passwd&site=testsite" class="test-link">
+            🛡️ Path Traversal Test
+        </a>
+        
+        <a href="/blocked/?reason=SQL%20Injection%20detected&rule=SQL%20Protection&url=http://example.com/?id=1%27%20UNION%20SELECT&site=testsite" class="test-link">
+            💉 SQL Injection Test
+        </a>
+        
+        <a href="/blocked/?reason=XSS%20attempt%20blocked&rule=XSS%20Protection&url=http://example.com/?search=%3Cscript%3Ealert%28%27xss%27%29%3C/script%3E&site=testsite" class="test-link">
+            🚨 XSS Attack Test
+        </a>
+        
+        <h3>Video Features:</h3>
+        <ul>
+            <li>✅ Autoplay (muted) when page loads</li>
+            <li>✅ Loop continuously</li>
+            <li>✅ Responsive design (adapts to screen size)</li>
+            <li>✅ Multiple fallback video sources</li>
+            <li>✅ Animated fallback if no video loads</li>
+            <li>✅ Click to play/pause functionality</li>
+            <li>✅ Visual feedback (border changes on play/pause)</li>
+            <li>✅ Intersection Observer (pauses when out of view)</li>
+            <li>✅ Page load animation</li>
+        </ul>
+        
+        <div class="info">
+            <h3>📁 Video File Locations:</h3>
+            <p>The blocked page will try to load videos from these sources in order:</p>
+            <ol>
+                <li><code>/static/waf_proxy/videos/security-alert.mp4</code> (local file)</li>
+                <li><code>/static/waf_proxy/videos/security-alert.webm</code> (local WebM)</li>
+                <li><code>/static/waf_proxy/videos/security-alert.ogv</code> (local OGV)</li>
+                <li>External fallback video sources</li>
+                <li>Animated fallback content (if no videos work)</li>
+            </ol>
+        </div>
+        
+        <h3>🏠 Navigation:</h3>
+        <a href="/" class="test-link" style="background: #007bff;">Go to Homepage</a>
+        <a href="/api/test" class="test-link" style="background: #28a745;">Test API</a>
+        
+    </div>
+</body>
+</html>

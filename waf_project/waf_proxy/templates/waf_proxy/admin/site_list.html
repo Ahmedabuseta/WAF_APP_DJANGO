@@ -1,0 +1,253 @@
+{% extends "waf_proxy/dashboard/layout.html" %}
+
+{% block page_title %}All Sites{% endblock %}
+{% block page_subtitle %}Manage all protected sites across customers{% endblock %}
+
+{% block page_actions %}
+<a href="#" class="btn btn-primary">
+    <i class="fas fa-plus"></i>
+    Add Site
+</a>
+<a href="#" class="btn btn-secondary">
+    <i class="fas fa-download"></i>
+    Export Report
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-section">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="section-title">Protected Sites</h3>
+            <div class="header-filters">
+                <select class="form-control" style="width: 150px;">
+                    <option>All Status</option>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                </select>
+                <input type="text" class="form-control" placeholder="Search sites..." style="width: 250px;">
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Site</th>
+                        <th>Owner</th>
+                        <th>Backend</th>
+                        <th>Requests (24h)</th>
+                        <th>Threats Blocked</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for site in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="site-info">
+                                    <div class="site-icon">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div>
+                                        <div class="site-domain">{{ site.domain }}</div>
+                                        <div class="site-created">Added {{ site.created_at|timesince }} ago</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="owner-info">
+                                    <div class="owner-name">{{ site.owner.first_name }} {{ site.owner.last_name }}</div>
+                                    <div class="owner-email">{{ site.owner.email }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="backend-url">{{ site.backend_url }}</div>
+                            </td>
+                            <td>
+                                <div class="request-count">
+                                    {% with site.requestlog_set.all|length as req_count %}
+                                        {{ req_count|default:0 }}
+                                    {% endwith %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="blocked-count">
+                                    {% with site.requestlog_set.all|length as blocked_count %}
+                                        {{ blocked_count|default:0 }}
+                                    {% endwith %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-cell">
+                                    <div class="status-dot {% if site.is_active %}active{% else %}inactive{% endif %}"></div>
+                                    <span class="badge badge-{% if site.is_active %}success{% else %}warning{% endif %}">
+                                        {% if site.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="#" class="btn btn-secondary btn-sm" title="View Stats">
+                                        <i class="fas fa-chart-line"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-secondary btn-sm" title="Manage Rules">
+                                        <i class="fas fa-shield-virus"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-secondary btn-sm" title="Settings">
+                                        <i class="fas fa-cog"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                <div class="table-empty">
+                                    <i class="fas fa-globe"></i>
+                                    <h4>No Sites Protected</h4>
+                                    <p>No sites have been added to the WAF yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+            <div class="card-footer">
+                <div class="pagination-info">
+                    Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} sites
+                </div>
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-chevron-left"></i>
+                            Previous
+                        </a>
+                    {% endif %}
+                    
+                    <span class="page-info">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary btn-sm">
+                            Next
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.header-filters {
+    display: flex;
+    gap: var(--spacing-3);
+    align-items: center;
+}
+
+.site-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.site-icon {
+    width: 36px;
+    height: 36px;
+    background-color: var(--light-blue);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-blue);
+}
+
+.site-domain {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-1);
+}
+
+.site-created {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.owner-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.owner-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.owner-email {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.backend-url {
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    font-size: 12px;
+    background-color: var(--bg-tertiary);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.request-count,
+.blocked-count {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+    .header-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-2);
+    }
+    
+    .header-filters .form-control {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        gap: var(--spacing-4);
+        align-items: stretch;
+    }
+    
+    .backend-url {
+        max-width: 150px;
+    }
+    
+    .table-actions {
+        flex-direction: column;
+        gap: var(--spacing-1);
+    }
+    
+    .table-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

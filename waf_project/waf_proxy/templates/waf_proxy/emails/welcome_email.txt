@@ -1,0 +1,32 @@
+{{ site_name }} - Welcome!
+
+Hi {{ user.first_name|default:user.email }},
+
+Congratulations! Your email has been verified and your {{ site_name }} account is now active. You're ready to start protecting your websites with our advanced Web Application Firewall.
+
+Access your dashboard: {{ login_url }}
+
+What you can do now:
+
+🛡️ Add Protected Sites
+Register your websites and start protecting them from attacks
+
+⚙️ Configure Rules  
+Customize security rules to fit your specific needs
+
+📊 Monitor Activity
+View real-time security metrics and threat analysis
+
+📈 Review Logs
+Analyze detailed security logs and blocked attacks
+
+If you have any questions or need assistance getting started, please don't hesitate to contact our support team.
+
+Thank you for choosing {{ site_name }} to secure your web applications!
+
+Best regards,
+The {{ site_name }} Team
+
+---
+© 2024 {{ site_name }}. All rights reserved.
+This is an automated message, please do not reply to this email.

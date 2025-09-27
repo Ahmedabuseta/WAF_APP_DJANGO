@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{ site_name }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0b1e 0%, #1a1d3a 100%);
+            color: #e8e9f3;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .email-card {
+            background: rgba(30, 35, 71, 0.9);
+            border-radius: 16px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            overflow: hidden;
+            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.4);
+        }
+        .email-header {
+            background: linear-gradient(135deg, #10b981, #22c55e);
+            padding: 32px;
+            text-align: center;
+        }
+        .email-logo {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .email-title {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+        .email-body {
+            padding: 32px;
+        }
+        .email-content h2 {
+            color: #e8e9f3;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        .email-content p {
+            color: #a8afd8;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .login-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #22c55e);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin: 24px 0;
+            transition: all 0.3s ease;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature-item {
+            background: rgba(42, 47, 95, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(61, 66, 117, 0.3);
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        .feature-title {
+            color: #e8e9f3;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .feature-description {
+            color: #a8afd8;
+            font-size: 14px;
+            margin: 0;
+        }
+        .email-footer {
+            background: rgba(42, 47, 95, 0.5);
+            padding: 24px 32px;
+            text-align: center;
+            border-top: 1px solid rgba(61, 66, 117, 0.3);
+        }
+        .email-footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-card">
+            <div class="email-header">
+                <div class="email-logo">🎉</div>
+                <h1 class="email-title">Welcome to {{ site_name }}!</h1>
+            </div>
+            
+            <div class="email-body">
+                <div class="email-content">
+                    <h2>Your Account is Ready!</h2>
+                    <p>Hi {{ user.first_name|default:user.email }},</p>
+                    <p>Congratulations! Your email has been verified and your {{ site_name }} account is now active. You're ready to start protecting your websites with our advanced Web Application Firewall.</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="{{ login_url }}" class="login-button">
+                            🚀 Access Your Dashboard
+                        </a>
+                    </div>
+                    
+                    <h3 style="color: #e8e9f3; margin-top: 32px;">What you can do now:</h3>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon">🛡️</div>
+                            <div class="feature-title">Add Protected Sites</div>
+                            <p class="feature-description">Register your websites and start protecting them from attacks</p>
+                        </div>
+                        
+                        <div class="feature-item">
+                            <div class="feature-icon">⚙️</div>
+                            <div class="feature-title">Configure Rules</div>
+                            <p class="feature-description">Customize security rules to fit your specific needs</p>
+                        </div>
+                        
+                        <div class="feature-item">
+                            <div class="feature-icon">📊</div>
+                            <div class="feature-title">Monitor Activity</div>
+                            <p class="feature-description">View real-time security metrics and threat analysis</p>
+                        </div>
+                        
+                        <div class="feature-item">
+                            <div class="feature-icon">📈</div>
+                            <div class="feature-title">Review Logs</div>
+                            <p class="feature-description">Analyze detailed security logs and blocked attacks</p>
+                        </div>
+                    </div>
+                    
+                    <p>If you have any questions or need assistance getting started, please don't hesitate to contact our support team.</p>
+                    
+                    <p>Thank you for choosing {{ site_name }} to secure your web applications!</p>
+                    
+                    <p>Best regards,<br>The {{ site_name }} Team</p>
+                </div>
+            </div>
+            
+            <div class="email-footer">
+                <p>&copy; 2024 {{ site_name }}. All rights reserved.</p>
+                <p>This is an automated message, please do not reply to this email.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

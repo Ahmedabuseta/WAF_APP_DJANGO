@@ -1,0 +1,178 @@
+{% extends 'waf_proxy/base.html' %}
+
+{% block title %}{{ site.domain }} Stats - WAF Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'site_list' %}">My Sites</a></li>
+                <li class="breadcrumb-item active">{{ site.domain }} Stats</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-chart-bar text-primary me-2"></i>Statistics for {{ site.domain }}
+        </h1>
+    </div>
+    <a href="{% url 'site_rules' site.id %}" class="btn btn-outline-primary">
+        <i class="fas fa-shield-alt me-2"></i>Manage Rules
+    </a>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-eye fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ recent_logs|length }}</h3>
+                <small>Total Requests</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card success">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h3 class="mb-0">{% for log in recent_logs %}{% if log.status == 'ALLOWED' %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}</h3>
+                <small>Allowed</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card warning">
+            <div class="card-body text-center">
+                <i class="fas fa-ban fa-2x mb-2"></i>
+                <h3 class="mb-0">{% for log in recent_logs %}{% if log.status == 'BLOCKED' %}{{ forloop.counter0|add:1 }}{% endif %}{% empty %}0{% endfor %}</h3>
+                <small>Blocked</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card info">
+            <div class="card-body text-center">
+                <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                <h3 class="mb-0">{{ site.siterule_set.count }}</h3>
+                <small>Active Rules</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+{% if stats %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>7-Day Activity Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Requests</th>
+                                <th>Blocked</th>
+                                <th>Allowed</th>
+                                <th>Block Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in stats %}
+                            <tr>
+                                <td>{{ stat.date|date:"M d, Y" }}</td>
+                                <td>{{ stat.total_requests }}</td>
+                                <td><span class="text-danger">{{ stat.blocked_requests }}</span></td>
+                                <td><span class="text-success">{{ stat.allowed_requests }}</span></td>
+                                <td>
+                                    {% if stat.total_requests > 0 %}
+                                        {% widthratio stat.blocked_requests stat.total_requests 100 %}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history text-primary me-2"></i>Recent Activity (Last 20 requests)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>IP Address</th>
+                                    <th>Method</th>
+                                    <th>URL</th>
+                                    <th>User Agent</th>
+                                    <th>Status</th>
+                                    <th>Rule</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.timestamp|date:"H:i:s" }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ log.ip_address }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ log.method }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ log.url|truncatechars:30 }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ log.user_agent|truncatechars:40 }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if log.status == 'BLOCKED' %}bg-danger{% elif log.status == 'ALLOWED' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ log.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if log.rule_matched %}
+                                            <small class="text-muted">{{ log.rule_matched.name }}</small>
+                                        {% else %}
+                                            <small class="text-muted">-</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No activity yet</h5>
+                        <p class="text-muted">Activity will appear here as requests are processed for this site.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

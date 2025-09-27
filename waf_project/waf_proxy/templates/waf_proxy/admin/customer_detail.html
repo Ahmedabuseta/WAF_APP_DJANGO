@@ -1,0 +1,206 @@
+{% extends 'waf_proxy/dashboard/layout.html' %}
+{% load static %}
+
+{% block title %}{{ customer.first_name }} {{ customer.last_name }} - Customer Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3">👤 {{ customer.first_name }} {{ customer.last_name }}</h1>
+                    <p class="text-muted mb-0">Customer Details</p>
+                </div>
+                <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Customers
+                </a>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-primary">{{ sites.count }}</h2>
+                            <p class="mb-0">Total Sites</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-info">{{ total_requests }}</h2>
+                            <p class="mb-0">Total Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h2 class="text-danger">{{ blocked_requests }}</h2>
+                            <p class="mb-0">Blocked Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            {% if customer.is_active %}
+                                <h2 class="text-success">🟢</h2>
+                                <p class="mb-0">Status: Active</p>
+                            {% else %}
+                                <h2 class="text-danger">🔴</h2>
+                                <p class="mb-0">Status: Inactive</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">🌐 Customer Sites</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if sites %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Site Name</th>
+                                                <th>Domain</th>
+                                                <th>Backend URL</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for site in sites %}
+                                            <tr>
+                                                <td>{{ site.name }}</td>
+                                                <td>{{ site.domain }}</td>
+                                                <td class="text-truncate" style="max-width: 200px;">{{ site.backend_url }}</td>
+                                                <td>
+                                                    {% if site.is_active %}
+                                                        <span class="badge bg-success">Active</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Inactive</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ site.created_at|date:"M d, Y" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted mb-0">No sites created yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">📋 Customer Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Name:</strong>
+                                <p class="mb-1">{{ customer.first_name }} {{ customer.last_name }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>Email:</strong>
+                                <p class="mb-1">{{ customer.email }}</p>
+                                {% if customer.is_email_verified %}
+                                    <small class="text-success">✓ Verified</small>
+                                {% else %}
+                                    <small class="text-danger">✗ Not Verified</small>
+                                {% endif %}
+                            </div>
+                            
+                            {% if customer.company_name %}
+                            <div class="mb-3">
+                                <strong>Company:</strong>
+                                <p class="mb-1">{{ customer.company_name }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if customer.phone %}
+                            <div class="mb-3">
+                                <strong>Phone:</strong>
+                                <p class="mb-1">{{ customer.phone }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <strong>Joined:</strong>
+                                <p class="mb-1">{{ customer.created_at|date:"M d, Y" }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>Last Login:</strong>
+                                <p class="mb-1">
+                                    {% if customer.last_login %}
+                                        {{ customer.last_login|date:"M d, Y H:i" }}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <strong>Account Status:</strong>
+                                <p class="mb-1">
+                                    {% if customer.is_active %}
+                                        <span class="text-success">Active</span>
+                                    {% else %}
+                                        <span class="text-danger">Inactive</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">🔧 Admin Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                {% if customer.is_active %}
+                                    <button class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-pause"></i> Suspend Account
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-play"></i> Activate Account
+                                    </button>
+                                {% endif %}
+                                
+                                <button class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-envelope"></i> Send Email
+                                </button>
+                                
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-history"></i> View Activity Log
+                                </button>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="text-center">
+                                <small class="text-muted">Customer ID: {{ customer.id }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

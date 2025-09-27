@@ -1,0 +1,323 @@
+{% extends "waf_proxy/dashboard/layout.html" %}
+
+{% block page_title %}Customer Dashboard{% endblock %}
+{% block page_subtitle %}Monitor your protected sites and security metrics{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'site_list' %}" class="btn btn-primary">
+    <i class="fas fa-plus"></i>
+    Add Site
+</a>
+<a href="#" class="btn btn-secondary">
+    <i class="fas fa-cog"></i>
+    Settings
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Quick Stats Section -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Your Security Overview
+        </h2>
+    </div>
+    
+    <div class="dashboard-grid cols-3">
+        <!-- Total Sites -->
+        <div class="stats-card theme-blue">
+            <div class="stats-content">
+                <div class="stats-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-value">{{ total_sites }}</div>
+                    <div class="stats-label">Protected Sites</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Requests -->
+        <div class="stats-card theme-green">
+            <div class="stats-content">
+                <div class="stats-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-value">{{ total_requests_today|floatformat:0 }}</div>
+                    <div class="stats-label">Requests Today</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blocked Attacks -->
+        <div class="stats-card theme-red">
+            <div class="stats-content">
+                <div class="stats-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-value">{{ blocked_today }}</div>
+                    <div class="stats-label">Threats Blocked</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sites Overview Section -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-server"></i>
+            Your Sites
+        </h2>
+        <div class="section-actions">
+            <a href="{% url 'site_list' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-list"></i>
+                View All
+            </a>
+        </div>
+    </div>
+    
+    {% if sites %}
+        <div class="dashboard-grid cols-2">
+            {% for site in sites %}
+                <div class="site-card dashboard-card">
+                    <div class="site-header">
+                        <div class="site-info">
+                            <h4 class="site-name">{{ site.domain }}</h4>
+                            <p class="site-backend">{{ site.backend_url }}</p>
+                        </div>
+                        <div class="site-status">
+                            {% if site.is_active %}
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check"></i>
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger">
+                                    <i class="fas fa-pause"></i>
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="site-actions">
+                        <a href="{% url 'site_rules' site.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-shield-virus"></i>
+                            Rules
+                        </a>
+                        <a href="{% url 'site_stats' site.id %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-chart-line"></i>
+                            Stats
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state-card dashboard-card">
+            <div class="empty-state">
+                <i class="fas fa-globe"></i>
+                <h4>No Sites Protected Yet</h4>
+                <p>Add your first site to start protecting it with our WAF</p>
+                <a href="{% url 'site_list' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Your First Site
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Recent Activity Section -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i>
+            Recent Activity
+        </h2>
+    </div>
+    
+    {% if recent_logs %}
+        <div class="dashboard-card">
+            <div class="activity-list">
+                {% for log in recent_logs %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            {% if log.status == 'BLOCKED' %}
+                                <i class="fas fa-ban text-danger"></i>
+                            {% elif log.status == 'RATE_LIMITED' %}
+                                <i class="fas fa-clock text-warning"></i>
+                            {% else %}
+                                <i class="fas fa-check text-success"></i>
+                            {% endif %}
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title">{{ log.url|truncatechars:60 }}</div>
+                            <div class="activity-meta">
+                                {{ log.site.domain }} • {{ log.ip_address }} • {{ log.timestamp|timesince }} ago
+                            </div>
+                        </div>
+                        <div class="activity-status">
+                            <span class="badge badge-{% if log.status == 'BLOCKED' %}danger{% elif log.status == 'RATE_LIMITED' %}warning{% else %}success{% endif %}">
+                                {{ log.status }}
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="dashboard-card">
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h4>No Recent Activity</h4>
+                <p>Activity will appear here as your sites receive traffic</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Site Card Styles */
+.site-card {
+    padding: 24px;
+}
+
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.site-info h4 {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-size: 1.125rem;
+}
+
+.site-backend {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-family: monospace;
+    background: var(--accent-bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 0;
+}
+
+.site-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Empty State Card */
+.empty-state-card {
+    grid-column: 1 / -1;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    opacity: 0.5;
+}
+
+.empty-state h4 {
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+}
+
+/* Activity List (reuse from admin) */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--accent-bg);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    background: var(--border-color);
+    transform: translateX(4px);
+}
+
+.activity-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    font-size: 16px;
+}
+
+.activity-info {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.activity-meta {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.activity-status {
+    display: flex;
+    align-items: center;
+}
+
+/* Text utility classes */
+.text-danger { color: var(--danger) !important; }
+.text-warning { color: var(--warning) !important; }
+.text-success { color: var(--success) !important; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .site-actions {
+        width: 100%;
+    }
+    
+    .site-actions .btn {
+        flex: 1;
+    }
+}
+</style>
+{% endblock %}

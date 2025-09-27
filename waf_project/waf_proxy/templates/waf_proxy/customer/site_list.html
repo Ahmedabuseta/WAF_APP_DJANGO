@@ -1,0 +1,259 @@
+{% extends "waf_proxy/dashboard/layout.html" %}
+
+{% block page_title %}My Sites{% endblock %}
+{% block page_subtitle %}Manage your protected websites{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'site_add' %}" class="btn btn-primary">
+    <i class="fas fa-plus"></i>
+    Add Site
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-section">
+    {% if sites %}
+        <div class="dashboard-grid cols-2">
+            {% for site in sites %}
+                <div class="site-card card">
+                    <div class="card-header">
+                        <div class="site-header">
+                            <div class="site-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="site-info">
+                                <h3 class="site-domain">{{ site.domain }}</h3>
+                                <p class="site-backend">{{ site.backend_url }}</p>
+                            </div>
+                            <div class="site-status">
+                                {% if site.is_active %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check"></i>
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-pause"></i>
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="site-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">
+                                    {% with site.requestlog_set.count as req_count %}
+                                        {{ req_count|default:0 }}
+                                    {% endwith %}
+                                </div>
+                                <div class="stat-label">Total Requests</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">
+                                    {% with site.requestlog_set.filter as blocked %}
+                                        0
+                                    {% endwith %}
+                                </div>
+                                <div class="stat-label">Blocked Today</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">
+                                    {{ site.siterule_set.count|default:0 }}
+                                </div>
+                                <div class="stat-label">Active Rules</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="site-actions">
+                            <a href="{% url 'site_rules' site.id %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-shield-virus"></i>
+                                Rules
+                            </a>
+                            <a href="{% url 'site_stats' site.id %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-chart-line"></i>
+                                Stats
+                            </a>
+                            <a href="{% url 'site_detail' site.id %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state card">
+            <div class="card-body">
+                <div class="empty-content">
+                    <div class="empty-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3>No Sites Protected Yet</h3>
+                    <p>Add your first website to start protecting it with our advanced WAF</p>
+                    <a href="{% url 'site_add' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add Your First Site
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.site-card {
+    transition: all 0.2s ease;
+}
+
+.site-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.site-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+}
+
+.site-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-blue));
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-white);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.site-info {
+    flex: 1;
+}
+
+.site-domain {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-1);
+}
+
+.site-backend {
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    font-size: 12px;
+    background-color: var(--bg-tertiary);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius);
+    margin-bottom: 0;
+}
+
+.site-status {
+    flex-shrink: 0;
+}
+
+.site-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-4);
+    margin: var(--spacing-4) 0;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: var(--spacing-1);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.site-actions {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.site-actions .btn {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Empty State */
+.empty-state {
+    grid-column: 1 / -1;
+}
+
+.empty-content {
+    text-align: center;
+    padding: var(--spacing-16) var(--spacing-6);
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-blue));
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: var(--text-white);
+    margin-bottom: var(--spacing-6);
+    opacity: 0.8;
+}
+
+.empty-content h3 {
+    margin-bottom: var(--spacing-2);
+    color: var(--text-primary);
+}
+
+.empty-content p {
+    margin-bottom: var(--spacing-6);
+    color: var(--text-secondary);
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        text-align: center;
+    }
+    
+    .site-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-2);
+    }
+    
+    .site-actions {
+        flex-direction: column;
+    }
+    
+    .empty-content {
+        padding: var(--spacing-12) var(--spacing-4);
+    }
+}
+</style>
+{% endblock %}

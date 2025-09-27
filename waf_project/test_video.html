@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Test - WAF Blocked Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            max-width: 800px;
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ee5a52;
+        }
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <h1>WAF Video Test Page</h1>
+        
+        <div class="info">
+            <h2>Testing Video Playback</h2>
+            <p>This page tests if the security alert video works properly for the blocked page.</p>
+        </div>
+        
+        <video id="testVideo" controls autoplay muted loop>
+            <source src="static/waf_proxy/videos/security-alert.mp4" type="video/mp4">
+            <source src="static/waf_proxy/videos/security-alert.webm" type="video/webm">
+            <source src="static/waf_proxy/videos/security-alert.ogv" type="video/ogg">
+            <p>Your browser doesn't support HTML5 video. The video should show a security alert message.</p>
+        </video>
+        
+        <div class="controls">
+            <button onclick="togglePlay()">Play/Pause</button>
+            <button onclick="toggleMute()">Mute/Unmute</button>
+            <button onclick="restartVideo()">Restart</button>
+        </div>
+        
+        <div class="info">
+            <h3>Video Information</h3>
+            <p id="videoInfo">Loading video info...</p>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('testVideo');
+        const videoInfo = document.getElementById('videoInfo');
+        
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+        
+        function toggleMute() {
+            video.muted = !video.muted;
+        }
+        
+        function restartVideo() {
+            video.currentTime = 0;
+            video.play();
+        }
+        
+        video.addEventListener('loadeddata', function() {
+            videoInfo.innerHTML = `
+                <strong>Status:</strong> Video loaded successfully!<br>
+                <strong>Duration:</strong> ${video.duration.toFixed(2)} seconds<br>
+                <strong>Dimensions:</strong> ${video.videoWidth} x ${video.videoHeight}<br>
+                <strong>Ready State:</strong> ${video.readyState}
+            `;
+        });
+        
+        video.addEventListener('error', function(e) {
+            videoInfo.innerHTML = `
+                <strong>Error:</strong> Video failed to load<br>
+                <strong>Error Code:</strong> ${video.error ? video.error.code : 'Unknown'}<br>
+                <strong>Error Message:</strong> ${video.error ? video.error.message : 'Unknown error'}
+            `;
+        });
+        
+        video.addEventListener('canplay', function() {
+            console.log('Video can start playing');
+        });
+        
+        video.addEventListener('play', function() {
+            console.log('Video started playing');
+        });
+        
+        video.addEventListener('pause', function() {
+            console.log('Video paused');
+        });
+    </script>
+</body>
+</html>
