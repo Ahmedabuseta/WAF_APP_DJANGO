@@ -67,7 +67,13 @@ class User(AbstractBaseUser):
     def get_all_permissions(self, obj=None):
         """Return a set of permission strings that this user has."""
         if self.user_type == 'admin':
-            return {'*'}  # Admin has all permissions
+            # Return common Django permissions for admin users
+            return {
+                'auth.add_user', 'auth.change_user', 'auth.delete_user', 'auth.view_user',
+                'waf_proxy.add_site', 'waf_proxy.change_site', 'waf_proxy.delete_site', 'waf_proxy.view_site',
+                'waf_proxy.add_rule', 'waf_proxy.change_rule', 'waf_proxy.delete_rule', 'waf_proxy.view_rule',
+                'waf_proxy.view_requestlog', 'waf_proxy.delete_requestlog'
+            }
         return set()
 
     def get_group_permissions(self, obj=None):
@@ -77,7 +83,12 @@ class User(AbstractBaseUser):
     def get_user_permissions(self, obj=None):
         """Return a set of permission strings that this user has directly."""
         if self.user_type == 'admin':
-            return {'*'}  # Admin has all permissions
+            return {
+                'auth.add_user', 'auth.change_user', 'auth.delete_user', 'auth.view_user',
+                'waf_proxy.add_site', 'waf_proxy.change_site', 'waf_proxy.delete_site', 'waf_proxy.view_site',
+                'waf_proxy.add_rule', 'waf_proxy.change_rule', 'waf_proxy.delete_rule', 'waf_proxy.view_rule',
+                'waf_proxy.view_requestlog', 'waf_proxy.delete_requestlog'
+            }
         return set()
 
     @property
