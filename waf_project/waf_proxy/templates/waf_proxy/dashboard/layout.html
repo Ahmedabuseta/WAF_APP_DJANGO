@@ -1,49 +1,8 @@
-{% extends "waf_proxy/base.html" %}
+{% extends "waf_proxy/main_layout.html" %}
 
-{% block content %}
-<!-- Include Navbar -->
-{% include "waf_proxy/components/navbar.html" %}
-
-<!-- Include Sidebar -->
-{% include "waf_proxy/components/sidebar.html" %}
-
-<!-- Main Content Area -->
-<div class="lg:ml-72">
-    <!-- Mobile Header -->
-    <header class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <button data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
-            <span class="sr-only">Open sidebar</span>
-            <i class="fas fa-bars w-6 h-6"></i>
-        </button>
-        <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <i class="fas fa-shield-alt text-white"></i>
-            </div>
-            <span class="font-bold text-gray-900">WAF Security</span>
-        </div>
-        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-gray-500"></i>
-        </div>
-    </header>
-
-    <!-- Page Header -->
-    <div class="bg-white border-b border-gray-200 px-6 py-6">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
-                <p class="text-gray-600 mt-1">{% block page_subtitle %}Monitor and manage your security{% endblock %}</p>
-            </div>
-            <div class="flex items-center space-x-3">
-                {% block page_actions %}{% endblock %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="p-6 bg-gray-50 min-h-screen">
-        {% block dashboard_content %}{% endblock %}
-    </main>
-</div>
+{% block main_content %}
+    {% block dashboard_content %}{% endblock %}
+{% endblock %}
 
 <style>
 .main-content {

@@ -100,9 +100,7 @@ class ProxyForwardingMiddleware(MiddlewareMixin):
             logger.debug(f"🌐 [REQ-{request_id}] Making {request.method} request to backend...")
             backend_start_time = time.time()
 
-            response = 
-            
-            .request(
+            response = request(
                 method=request.method,
                 url=full_url,
                 headers=headers,

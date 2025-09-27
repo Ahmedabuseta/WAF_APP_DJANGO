@@ -1,193 +1,272 @@
-{% extends 'waf_proxy/dashboard/layout.html' %}
-{% load static %}
+{% extends 'waf_proxy/main_layout.html' %}
 
-{% block title %}Profile - WAF Security{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block page_subtitle %}View and manage your account information{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3">👤 User Profile</h1>
-                <a href="{% url 'user_settings' %}" class="btn btn-outline-primary">
-                    <i class="fas fa-cog"></i> Settings
-                </a>
-            </div>
+{% block breadcrumb_items %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-cf-400 w-3 h-3 mx-1"></i>
+        <span class="ml-1 text-sm font-medium text-cf-500">Profile</span>
+    </div>
+</li>
+{% endblock %}
 
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
-                                     style="width: 80px; height: 80px; font-size: 2rem;">
-                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                                </div>
-                            </div>
-                            <h4>{{ user.first_name }} {{ user.last_name }}</h4>
-                            <p class="text-muted mb-2">{{ user.email }}</p>
-                            <span class="badge bg-{% if user.user_type == 'admin' %}danger{% else %}primary{% endif %}">
-                                {{ user.user_type|title }}
-                            </span>
+{% block page_actions %}
+<a href="{% url 'user_settings' %}" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+    <i class="fas fa-cog mr-2"></i>
+    Settings
+</a>
+{% endblock %}
+
+{% block main_content %}
+<div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Profile Card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow-cf rounded-lg border border-cf-200 overflow-hidden">
+                <div class="px-6 py-8 text-center bg-gradient-to-br from-primary-50 to-secondary-50">
+                    <div class="mb-4">
+                        <div class="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto shadow-cf-lg">
+                            {{ user.first_name|first|upper|default:"U" }}{{ user.last_name|first|upper|default:"" }}
                         </div>
                     </div>
-                    
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h6 class="mb-0">📊 Account Stats</h6>
+                    <h2 class="text-xl font-semibold text-cf-900">
+                        {{ user.first_name|default:"User" }} {{ user.last_name|default:"" }}
+                    </h2>
+                    <p class="text-cf-600 mb-3">{{ user.email }}</p>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if user.user_type == 'admin' %}bg-primary-100 text-primary-800{% else %}bg-secondary-100 text-secondary-800{% endif %}">
+                        <i class="fas fa-{% if user.user_type == 'admin' %}crown{% else %}user{% endif %} mr-2"></i>
+                        {{ user.user_type|title }}
+                    </span>
+                </div>
+                
+                <div class="px-6 py-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-cf-500">Member Since</span>
+                            <span class="text-sm font-medium text-cf-900">{{ user.created_at|date:"M Y" }}</span>
                         </div>
-                        <div class="card-body">
-                            {% if user.user_type == 'customer' %}
-                                <div class="mb-2">
-                                    <strong>Sites:</strong> {{ user.site_set.count }}
-                                </div>
-                                <div class="mb-2">
-                                    <strong>Active Sites:</strong> {{ user.site_set.filter.is_active.count }}
-                                </div>
-                            {% endif %}
-                            <div class="mb-2">
-                                <strong>Member Since:</strong> {{ user.created_at|date:"M Y" }}
-                            </div>
-                            <div class="mb-2">
-                                <strong>Last Login:</strong> 
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-cf-500">Email Status</span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if user.is_email_verified %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {% if user.is_email_verified %}
+                                    <i class="fas fa-check-circle mr-1"></i>Verified
+                                {% else %}
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>Unverified
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-cf-500">Last Login</span>
+                            <span class="text-sm font-medium text-cf-900">
                                 {% if user.last_login %}
-                                    {{ user.last_login|date:"M d, Y" }}
+                                    {{ user.last_login|date:"M j, Y" }}
                                 {% else %}
                                     Never
                                 {% endif %}
-                            </div>
-                            <div class="mb-0">
-                                <strong>Email Verified:</strong> 
-                                {% if user.is_email_verified %}
-                                    <span class="text-success">✓ Yes</span>
-                                {% else %}
-                                    <span class="text-danger">✗ No</span>
-                                {% endif %}
-                            </div>
+                            </span>
                         </div>
+                        
+                        {% if user.user_type == 'customer' %}
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-cf-500">Protected Sites</span>
+                            <span class="text-sm font-medium text-cf-900">{{ user.site_set.count }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">📋 Personal Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">First Name</label>
-                                        <p class="mb-0">{{ user.first_name|default:"Not provided" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">Last Name</label>
-                                        <p class="mb-0">{{ user.last_name|default:"Not provided" }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">Email Address</label>
-                                        <p class="mb-0">{{ user.email }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">Phone Number</label>
-                                        <p class="mb-0">{{ user.phone|default:"Not provided" }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">Company</label>
-                                        <p class="mb-0">{{ user.company_name|default:"Not provided" }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted">User Type</label>
-                                        <p class="mb-0">{{ user.user_type|title }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="text-end">
-                                <a href="{% url 'user_settings' %}" class="btn btn-primary">
-                                    <i class="fas fa-edit"></i> Edit Profile
-                                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Account Information -->
+            <div class="bg-white shadow-cf rounded-lg border border-cf-200">
+                <div class="px-6 py-4 border-b border-cf-200">
+                    <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                        <i class="fas fa-id-card mr-3 text-primary-600"></i>
+                        Account Information
+                    </h3>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-cf-500 mb-2">First Name</label>
+                            <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                                <span class="text-cf-900">{{ user.first_name|default:"Not provided" }}</span>
                             </div>
                         </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-cf-500 mb-2">Last Name</label>
+                            <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                                <span class="text-cf-900">{{ user.last_name|default:"Not provided" }}</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-cf-500 mb-2">Email Address</label>
+                            <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                                <span class="text-cf-900">{{ user.email }}</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-cf-500 mb-2">Phone Number</label>
+                            <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                                <span class="text-cf-900">{{ user.phone|default:"Not provided" }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if user.user_type == 'customer' %}
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-cf-500 mb-2">Company Name</label>
+                            <div class="p-3 bg-cf-50 border border-cf-200 rounded-lg">
+                                <span class="text-cf-900">{{ user.company_name|default:"Not provided" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                    
-                    {% if user.user_type == 'customer' %}
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">🌐 Recent Sites</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if user.site_set.all %}
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Site Name</th>
-                                                <th>Domain</th>
-                                                <th>Status</th>
-                                                <th>Created</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for site in user.site_set.all|slice:":5" %}
-                                            <tr>
-                                                <td>{{ site.name }}</td>
-                                                <td>{{ site.domain }}</td>
-                                                <td>
-                                                    {% if site.is_active %}
-                                                        <span class="badge bg-success">Active</span>
-                                                    {% else %}
-                                                        <span class="badge bg-warning">Inactive</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>{{ site.created_at|date:"M d" }}</td>
-                                                <td>
-                                                    <a href="{% url 'site_detail' site.id %}" class="btn btn-sm btn-outline-primary">
-                                                        View
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+                </div>
+            </div>
+
+            {% if user.user_type == 'customer' %}
+            <!-- Sites Overview -->
+            <div class="bg-white shadow-cf rounded-lg border border-cf-200">
+                <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                        <i class="fas fa-globe mr-3 text-secondary-600"></i>
+                        Protected Sites
+                    </h3>
+                    <a href="{% url 'site_list' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                        View All <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                <div class="px-6 py-6">
+                    {% if user.site_set.exists %}
+                        <div class="space-y-4">
+                            {% for site in user.site_set.all|slice:":3" %}
+                            <div class="flex items-center justify-between p-4 bg-cf-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-cf">
+                                        <i class="fas fa-globe text-secondary-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-cf-900">{{ site.domain }}</div>
+                                        <div class="text-sm text-cf-500">{{ site.backend_url|truncatechars:40 }}</div>
+                                    </div>
                                 </div>
-                                
-                                {% if user.site_set.count > 5 %}
-                                <div class="text-center">
-                                    <a href="{% url 'site_list' %}" class="btn btn-sm btn-outline-secondary">
-                                        View All Sites ({{ user.site_set.count }})
-                                    </a>
-                                </div>
-                                {% endif %}
-                            {% else %}
-                                <p class="text-muted mb-0">No sites created yet.</p>
-                                <a href="{% url 'site_add' %}" class="btn btn-sm btn-primary mt-2">
-                                    <i class="fas fa-plus"></i> Add Your First Site
-                                </a>
-                            {% endif %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if site.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {% if site.is_active %}
+                                        <i class="fas fa-check-circle mr-1"></i>Active
+                                    {% else %}
+                                        <i class="fas fa-times-circle mr-1"></i>Inactive
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endfor %}
                         </div>
-                    </div>
+                        
+                        {% if user.site_set.count > 3 %}
+                        <div class="mt-4 text-center">
+                            <span class="text-sm text-cf-500">And {{ user.site_set.count|add:"-3" }} more sites...</span>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-8">
+                            <i class="fas fa-globe text-cf-300 text-4xl mb-4"></i>
+                            <h4 class="text-lg font-medium text-cf-900 mb-2">No Sites Protected</h4>
+                            <p class="text-cf-500 mb-4">Start protecting your websites with our WAF service.</p>
+                            <button onclick="openModal('addSiteModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-4 py-2 transition-colors duration-200">
+                                Add Your First Site
+                            </button>
+                        </div>
                     {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Activity -->
+            <div class="bg-white shadow-cf rounded-lg border border-cf-200">
+                <div class="px-6 py-4 border-b border-cf-200">
+                    <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                        <i class="fas fa-clock mr-3 text-yellow-600"></i>
+                        Recent Activity
+                    </h3>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                                <i class="fas fa-sign-in-alt text-green-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-cf-900">Logged in</div>
+                                <div class="text-sm text-cf-500">{{ user.last_login|timesince }} ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                                <i class="fas fa-user-edit text-blue-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-cf-900">Profile updated</div>
+                                <div class="text-sm text-cf-500">2 days ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                                <i class="fas fa-shield-alt text-primary-600 text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-cf-900">Account created</div>
+                                <div class="text-sm text-cf-500">{{ user.created_at|timesince }} ago</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+{% if user.user_type == 'customer' %}
+<!-- Add Site Modal (reuse from dashboard) -->
+{% block modals %}
+<div id="addSiteModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Add New Site</h3>
+            <button onclick="closeModal('addSiteModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <form action="{% url 'site_add' %}" method="post" class="p-6 space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="domain" class="block text-sm font-medium text-cf-900 mb-2">Domain</label>
+                <input type="text" id="domain" name="domain" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="example.com" required>
+            </div>
+            <div>
+                <label for="backend_url" class="block text-sm font-medium text-cf-900 mb-2">Backend URL</label>
+                <input type="url" id="backend_url" name="backend_url" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="https://backend.example.com" required>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-4">
+                <button type="button" onclick="closeModal('addSiteModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    Add Site
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% endif %}
 {% endblock %}

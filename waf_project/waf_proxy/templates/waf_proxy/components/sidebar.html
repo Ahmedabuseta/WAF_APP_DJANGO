@@ -1,127 +1,95 @@
-<!-- Flowbite Sidebar Navigation -->
-<aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-72 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 lg:translate-x-0" aria-label="Sidebar">
-    <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
-        <ul class="space-y-2 font-medium">
+<!-- Cloudflare-style Sidebar Navigation -->
+<aside id="cf-sidebar" class="fixed top-16 left-0 z-30 w-64 h-screen transition-transform -translate-x-full bg-white border-r border-cf-200 lg:translate-x-0 shadow-cf" aria-label="Sidebar">
+    <div class="h-full px-4 py-6 overflow-y-auto bg-white">
+        <nav class="space-y-2">
             {% if user.is_authenticated %}
                 {% if user.user_type == 'admin' %}
                     <!-- Admin Navigation -->
-                    <li>
-                        <div class="flex items-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <div class="space-y-1">
+                        <div class="px-3 py-2 text-xs font-semibold text-cf-400 uppercase tracking-wider">
                             Overview
                         </div>
-                    </li>
-                    <li>
-                        <a href="{% url 'admin_dashboard' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-chart-line w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">Dashboard</span>
+                        <a href="{% url 'admin_dashboard' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'admin_dashboard' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-chart-line mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'admin_dashboard' %}text-primary-600{% endif %}"></i>
+                            Dashboard
                         </a>
-                    </li>
+                    </div>
 
-                    <li>
-                        <div class="flex items-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">
+                    <div class="space-y-1 pt-4">
+                        <div class="px-3 py-2 text-xs font-semibold text-cf-400 uppercase tracking-wider">
                             Management
                         </div>
-                    </li>
-                    <li>
-                        <a href="{% url 'customer_list' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'customer_list' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-users w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">Customers</span>
+                        <a href="{% url 'customer_list' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'customer_list' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-users mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'customer_list' %}text-primary-600{% endif %}"></i>
+                            Customers
                         </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'admin_site_list' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'admin_site_list' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-globe w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">All Sites</span>
+                        <a href="{% url 'admin_site_list' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'admin_site_list' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-globe mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'admin_site_list' %}text-primary-600{% endif %}"></i>
+                            All Sites
                         </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'rule_list' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'rule_list' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-shield-virus w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">Security Rules</span>
+                        <a href="{% url 'rule_list' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'rule_list' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-shield-virus mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'rule_list' %}text-primary-600{% endif %}"></i>
+                            Security Rules
                         </a>
-                    </li>
+                    </div>
 
-                    <li>
-                        <div class="flex items-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">
+                    <div class="space-y-1 pt-4">
+                        <div class="px-3 py-2 text-xs font-semibold text-cf-400 uppercase tracking-wider">
                             Monitoring
                         </div>
-                    </li>
-                    <li>
-                        <a href="{% url 'log_list' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'log_list' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-file-alt w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">Activity Logs</span>
+                        <a href="{% url 'log_list' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'log_list' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-file-alt mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'log_list' %}text-primary-600{% endif %}"></i>
+                            Activity Logs
                         </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'system_status' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'system_status' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-server w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">System Status</span>
+                        <a href="{% url 'system_status' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'system_status' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-server mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'system_status' %}text-primary-600{% endif %}"></i>
+                            System Status
                         </a>
-                    </li>
-
-                    <li>
-                        <div class="flex items-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">
-                            Tools
-                        </div>
-                    </li>
-                    <li>
-                        <a href="{% url 'api_docs' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
-                            <i class="fas fa-book w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">API Documentation</span>
-                        </a>
-                    </li>
+                    </div>
                 {% else %}
                     <!-- Customer Navigation -->
-                    <li>
-                        <div class="flex items-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <div class="space-y-1">
+                        <div class="px-3 py-2 text-xs font-semibold text-cf-400 uppercase tracking-wider">
                             Overview
                         </div>
-                    </li>
-                    <li>
-                        <a href="{% url 'customer_dashboard' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'customer_dashboard' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-chart-line w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">Dashboard</span>
+                        <a href="{% url 'customer_dashboard' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'customer_dashboard' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-chart-line mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'customer_dashboard' %}text-primary-600{% endif %}"></i>
+                            Dashboard
                         </a>
-                    </li>
+                    </div>
 
-                    <li>
-                        <div class="flex items-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">
+                    <div class="space-y-1 pt-4">
+                        <div class="px-3 py-2 text-xs font-semibold text-cf-400 uppercase tracking-wider">
                             Security
                         </div>
-                    </li>
-                    <li>
-                        <a href="{% url 'site_list' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'site_list' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-globe w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">My Sites</span>
-                            <span class="inline-flex items-center justify-center w-3 h-3 p-3 ml-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">{{ user.site_set.count }}</span>
+                        <a href="{% url 'site_list' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'site_list' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-globe mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'site_list' %}text-primary-600{% endif %}"></i>
+                            <span>My Sites</span>
+                            {% if user.site_set.count > 0 %}
+                                <span class="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-secondary-800 bg-secondary-100 rounded-full">{{ user.site_set.count }}</span>
+                            {% endif %}
                         </a>
-                    </li>
+                        <button onclick="openModal('addSiteModal')" class="group flex items-center w-full px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200">
+                            <i class="fas fa-plus mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600"></i>
+                            Add New Site
+                        </button>
+                    </div>
 
-                    <li>
-                        <div class="flex items-center p-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-4">
-                            Tools
+                    <div class="space-y-1 pt-4">
+                        <div class="px-3 py-2 text-xs font-semibold text-cf-400 uppercase tracking-wider">
+                            Account
                         </div>
-                    </li>
-                    <li>
-                        <a href="{% url 'user_settings' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'user_settings' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-cog w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">Settings</span>
+                        <a href="{% url 'user_settings' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'user_settings' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-cog mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'user_settings' %}text-primary-600{% endif %}"></i>
+                            Settings
                         </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'profile' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {% if request.resolver_match.url_name == 'profile' %}bg-gray-100{% endif %}">
-                            <i class="fas fa-user w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">Profile</span>
+                        <a href="{% url 'profile' %}" class="group flex items-center px-3 py-2 text-sm font-medium text-cf-700 rounded-lg hover:bg-cf-100 hover:text-cf-900 transition-colors duration-200 {% if request.resolver_match.url_name == 'profile' %}bg-primary-50 text-primary-700 border-r-2 border-primary-600{% endif %}">
+                            <i class="fas fa-user mr-3 w-5 h-5 text-cf-400 group-hover:text-cf-600 {% if request.resolver_match.url_name == 'profile' %}text-primary-600{% endif %}"></i>
+                            Profile
                         </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'api_docs' %}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group">
-                            <i class="fas fa-book w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
-                            <span class="ml-3">API Docs</span>
-                        </a>
-                    </li>
+                    </div>
                 {% endif %}
             {% endif %}
-        </ul>
+        </nav>
     </div>
 </aside>

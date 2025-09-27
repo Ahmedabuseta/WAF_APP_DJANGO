@@ -1,0 +1,68 @@
+{% extends "waf_proxy/base.html" %}
+
+{% block content %}
+<!-- Include Navbar -->
+{% include "waf_proxy/components/navbar.html" %}
+
+<!-- Include Sidebar -->
+{% include "waf_proxy/components/sidebar.html" %}
+
+<!-- Main Content Area with Cloudflare-style layout -->
+<div class="lg:ml-64">
+    <!-- Mobile Header for small screens -->
+    <header class="lg:hidden bg-white border-b border-cf-200 px-4 py-3 flex items-center justify-between shadow-cf">
+        <button data-drawer-target="cf-sidebar" data-drawer-toggle="cf-sidebar" aria-controls="cf-sidebar" type="button" class="inline-flex items-center p-2 text-sm text-cf-500 rounded-lg hover:bg-cf-100 focus:outline-none focus:ring-2 focus:ring-cf-200">
+            <span class="sr-only">Open sidebar</span>
+            <i class="fas fa-bars w-5 h-5"></i>
+        </button>
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-lg flex items-center justify-center shadow-cf">
+                <i class="fas fa-shield-alt text-white"></i>
+            </div>
+            <span class="font-semibold text-cf-900">WAF Security</span>
+        </div>
+        <div class="w-8 h-8 bg-cf-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-cf-500"></i>
+        </div>
+    </header>
+
+    <!-- Page Header with Cloudflare styling -->
+    <div class="bg-white border-b border-cf-200 px-6 py-6 shadow-cf">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-semibold text-cf-900 tracking-tight">{% block page_title %}Dashboard{% endblock %}</h1>
+                <p class="text-cf-600 mt-1 text-sm">{% block page_subtitle %}Monitor and manage your security{% endblock %}</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                {% block page_actions %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="p-6 min-h-screen bg-cf-50">
+        <!-- Breadcrumb Navigation -->
+        {% block breadcrumb %}
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{% if user.user_type == 'admin' %}{% url 'admin_dashboard' %}{% else %}{% url 'customer_dashboard' %}{% endif %}" class="inline-flex items-center text-sm font-medium text-cf-700 hover:text-primary-600">
+                        <i class="fas fa-home w-4 h-4 mr-2"></i>
+                        Dashboard
+                    </a>
+                </li>
+                {% block breadcrumb_items %}{% endblock %}
+            </ol>
+        </nav>
+        {% endblock %}
+
+        <!-- Page Content -->
+        <div class="space-y-6">
+            {% block main_content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<!-- Global Modals -->
+{% block modals %}{% endblock %}
+{% endblock %}

@@ -4,14 +4,14 @@
 {% block page_subtitle %}Monitor your protected sites and security metrics{% endblock %}
 
 {% block page_actions %}
-<a href="{% url 'site_list' %}" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 focus:outline-none">
+<button onclick="openModal('addSiteModal')" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
     <i class="fas fa-plus mr-2"></i>
     Add Site
-</a>
-<a href="#" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2">
+</button>
+<button onclick="openModal('settingsModal')" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
     <i class="fas fa-cog mr-2"></i>
     Settings
-</a>
+</button>
 {% endblock %}
 
 {% block dashboard_content %}
@@ -326,4 +326,74 @@
     }
 }
 </style>
+{% endblock %}
+
+{% block modals %}
+<!-- Add Site Modal -->
+<div id="addSiteModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Add New Site</h3>
+            <button onclick="closeModal('addSiteModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <form action="{% url 'site_add' %}" method="post" class="p-6 space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="domain" class="block text-sm font-medium text-cf-900 mb-2">Domain</label>
+                <input type="text" id="domain" name="domain" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="example.com" required>
+            </div>
+            <div>
+                <label for="backend_url" class="block text-sm font-medium text-cf-900 mb-2">Backend URL</label>
+                <input type="url" id="backend_url" name="backend_url" class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="https://backend.example.com" required>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-4">
+                <button type="button" onclick="closeModal('addSiteModal')" class="px-4 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200">
+                    Add Site
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-lg shadow-cf-xl w-full max-w-lg mx-4">
+        <div class="flex items-center justify-between p-6 border-b border-cf-200">
+            <h3 class="text-lg font-semibold text-cf-900">Quick Settings</h3>
+            <button onclick="closeModal('settingsModal')" class="text-cf-400 hover:text-cf-600">
+                <i class="fas fa-times w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div class="space-y-3">
+                <a href="{% url 'user_settings' %}" class="flex items-center p-3 rounded-lg hover:bg-cf-100 transition-colors duration-200">
+                    <i class="fas fa-cog w-5 h-5 text-cf-400 mr-3"></i>
+                    <div>
+                        <div class="font-medium text-cf-900">Account Settings</div>
+                        <div class="text-sm text-cf-500">Manage your account preferences</div>
+                    </div>
+                </a>
+                <a href="{% url 'profile' %}" class="flex items-center p-3 rounded-lg hover:bg-cf-100 transition-colors duration-200">
+                    <i class="fas fa-user w-5 h-5 text-cf-400 mr-3"></i>
+                    <div>
+                        <div class="font-medium text-cf-900">Profile</div>
+                        <div class="text-sm text-cf-500">Update your personal information</div>
+                    </div>
+                </a>
+                <button class="flex items-center w-full p-3 rounded-lg hover:bg-cf-100 transition-colors duration-200 text-left">
+                    <i class="fas fa-bell w-5 h-5 text-cf-400 mr-3"></i>
+                    <div>
+                        <div class="font-medium text-cf-900">Notifications</div>
+                        <div class="text-sm text-cf-500">Configure alert preferences</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
