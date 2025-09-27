@@ -1,8 +1,110 @@
-/* WAF Security Admin Analytics Styling - Cloudflare Theme */
+/* Cloudflare WAF Admin Analytics Styling */
 
 /* Override Jazzmin dashboard styling for analytics */
 .content-wrapper {
     background: #f8fafc !important;
+}
+
+/* Override Jazzmin brand colors */
+.navbar-brand {
+    color: #f38020 !important;
+}
+
+.brand-link {
+    color: #f38020 !important;
+}
+
+.brand-link:hover {
+    color: #e6731a !important;
+}
+
+/* Navbar styling */
+.main-header .navbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.main-header .navbar .nav-link {
+    color: #1e293b !important;
+}
+
+.main-header .navbar .nav-link:hover {
+    color: #f38020 !important;
+}
+
+/* Override sidebar colors for better visibility */
+.sidebar {
+    background-color: #1e293b !important; /* Cloudflare Dark Gray */
+}
+
+.sidebar .nav-link {
+    color: #ffffff !important; /* White text */
+}
+
+.sidebar .nav-link.active {
+    background-color: #f38020 !important; /* Cloudflare Orange */
+    color: white !important;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(243, 128, 32, 0.2) !important;
+    color: #ffffff !important; /* Keep white text on hover */
+}
+
+.sidebar .nav-treeview .nav-link {
+    color: #e2e8f0 !important; /* Light gray for sub-items */
+    padding-left: 2rem !important;
+}
+
+.sidebar .nav-treeview .nav-link:hover {
+    background-color: rgba(243, 128, 32, 0.15) !important;
+    color: #ffffff !important;
+}
+
+.sidebar .nav-treeview .nav-link.active {
+    background-color: #f38020 !important;
+    color: white !important;
+}
+
+/* Sidebar brand/logo area */
+.sidebar .brand-link {
+    background-color: #0f172a !important; /* Darker background for brand */
+    color: #f38020 !important;
+    border-bottom: 1px solid #334155 !important;
+}
+
+.sidebar .brand-link:hover {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+}
+
+/* Sidebar user info */
+.sidebar .user-panel {
+    background-color: #0f172a !important;
+    border-bottom: 1px solid #334155 !important;
+}
+
+.sidebar .user-panel .info {
+    color: #ffffff !important;
+}
+
+.sidebar .user-panel .info a {
+    color: #f38020 !important;
+}
+
+.sidebar .user-panel .info a:hover {
+    color: #ffffff !important;
+}
+
+/* Override primary buttons */
+.btn-primary {
+    background-color: #f38020 !important;
+    border-color: #f38020 !important;
+}
+
+.btn-primary:hover {
+    background-color: #e6731a !important;
+    border-color: #e6731a !important;
 }
 
 /* Analytics Cards */
