@@ -1,0 +1,143 @@
+{% extends "admin/base.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}
+    {% if add %}{% blocktranslate with name=opts.verbose_name %}Add {{ name }}{% endblocktranslate %}{% else %}{% blocktranslate with name=opts.verbose_name %}Change {{ name }}{% endblocktranslate %}{% endif %} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block content_title %}
+<div class="flex items-center justify-between px-6 py-4 bg-white border-b border-cf-200">
+    <div>
+        <h1 class="text-2xl font-semibold text-cf-900 flex items-center">
+            {% if opts.verbose_name == 'user' %}
+                <i class="fas fa-user mr-3 text-primary-600"></i>
+            {% elif opts.verbose_name == 'site' %}
+                <i class="fas fa-globe mr-3 text-secondary-600"></i>
+            {% elif opts.verbose_name == 'rule' %}
+                <i class="fas fa-shield-alt mr-3 text-red-600"></i>
+            {% elif opts.verbose_name == 'request log' %}
+                <i class="fas fa-file-alt mr-3 text-yellow-600"></i>
+            {% else %}
+                <i class="fas fa-edit mr-3 text-cf-600"></i>
+            {% endif %}
+            {% if add %}
+                {% blocktranslate with name=opts.verbose_name %}Add {{ name }}{% endblocktranslate %}
+            {% else %}
+                {% blocktranslate with name=opts.verbose_name %}Change {{ name }}{% endblocktranslate %}
+            {% endif %}
+        </h1>
+        <p class="text-cf-600 mt-1">
+            {% if add %}
+                Create a new {{ opts.verbose_name }}
+            {% else %}
+                Modify {{ opts.verbose_name }} details
+            {% endif %}
+        </p>
+    </div>
+    
+    {% block object-tools %}
+        {% if change %}
+            <div class="flex items-center space-x-3">
+                {% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
+                <a href="{{ history_url }}" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+                    <i class="fas fa-history mr-2"></i>
+                    {% translate "History" %}
+                </a>
+                {% if has_absolute_url %}
+                    <a href="{% url 'admin:view_on_site' content_type_id original.pk %}" class="text-secondary-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        {% translate "View on site" %}
+                    </a>
+                {% endif %}
+                {% if has_delete_permission %}
+                    <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}" class="bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+                        <i class="fas fa-trash mr-2"></i>
+                        {% translate "Delete" %}
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="px-6 py-6">
+    <div class="max-w-4xl mx-auto">
+        <form method="post" {% if has_file_field %}enctype="multipart/form-data"{% endif %} novalidate>
+            {% csrf_token %}
+            
+            {% if errors %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <i class="fas fa-exclamation-circle text-red-600 mr-3 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-red-800">Please correct the errors below</h4>
+                        <div class="mt-2">
+                            {{ errors }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Form Fields -->
+            <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+                <div class="px-6 py-4 border-b border-cf-200">
+                    <h3 class="text-lg font-medium text-cf-900">
+                        {{ opts.verbose_name|capfirst }} Details
+                    </h3>
+                </div>
+                <div class="p-6">
+                    {% block field_sets %}
+                        {% for fieldset in adminform %}
+                            {% include "admin/includes/fieldset.html" %}
+                        {% endfor %}
+                    {% endblock %}
+                    
+                    {% block after_field_sets %}{% endblock %}
+                    
+                    {% block inline_field_sets %}
+                        {% for inline_admin_formset in inline_admin_formsets %}
+                            {% include inline_admin_formset.opts.template %}
+                        {% endfor %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <!-- Submit Row -->
+            <div class="mt-6 bg-white border border-cf-200 rounded-lg shadow-cf">
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        {% if show_save %}
+                        <button type="submit" name="_save" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-6 py-2.5 transition-colors duration-200">
+                            <i class="fas fa-save mr-2"></i>
+                            {% translate 'Save' %}
+                        </button>
+                        {% endif %}
+                        
+                        {% if show_save_and_add_another %}
+                        <button type="submit" name="_addanother" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg px-4 py-2.5 transition-colors duration-200">
+                            <i class="fas fa-plus mr-2"></i>
+                            {% translate 'Save and add another' %}
+                        </button>
+                        {% endif %}
+                        
+                        {% if show_save_and_continue %}
+                        <button type="submit" name="_continue" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg px-4 py-2.5 transition-colors duration-200">
+                            <i class="fas fa-edit mr-2"></i>
+                            {% translate 'Save and continue editing' %}
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <a href="{% url cl.opts|admin_urlname:'changelist' %}" class="text-cf-600 hover:text-cf-800 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        {% translate 'Back to list' %}
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

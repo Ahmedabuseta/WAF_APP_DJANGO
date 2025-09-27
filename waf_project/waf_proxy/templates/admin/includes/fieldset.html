@@ -1,0 +1,116 @@
+{% load i18n %}
+{% if fieldset.name %}
+    <div class="border-b border-cf-200 pb-6 mb-6">
+        <h4 class="text-lg font-medium text-cf-900 mb-4 flex items-center">
+            <i class="fas fa-cog mr-2 text-secondary-600"></i>
+            {{ fieldset.name }}
+        </h4>
+        {% if fieldset.description %}
+            <p class="text-sm text-cf-600 mb-4">{{ fieldset.description }}</p>
+        {% endif %}
+{% endif %}
+
+<div class="space-y-6">
+    {% for line in fieldset %}
+        <div class="{% if line.fields|length_is:'1' %}{% else %}grid grid-cols-1 md:grid-cols-{{ line.fields|length }} gap-6{% endif %}">
+            {% for field in line %}
+                <div class="{% if field.field.required %}required{% endif %}">
+                    {% if field.is_checkbox %}
+                        <div class="flex items-center">
+                            {{ field.field }}
+                            <label for="{{ field.field.id_for_label }}" class="ml-2 text-sm font-medium text-cf-900">
+                                {{ field.field.label }}
+                            </label>
+                        </div>
+                    {% else %}
+                        {% if field.field.label %}
+                            <label for="{{ field.field.id_for_label }}" class="block text-sm font-medium text-cf-900 mb-2">
+                                {{ field.field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                        {% endif %}
+                        
+                        <div class="relative">
+                            {{ field.field }}
+                            {% if field.field.help_text %}
+                                <p class="mt-1 text-xs text-cf-500">{{ field.field.help_text }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if field.field.errors %}
+                        <div class="mt-1">
+                            {% for error in field.field.errors %}
+                                <p class="text-sm text-red-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-2"></i>
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+
+{% if fieldset.name %}
+    </div>
+{% endif %}
+
+<style>
+/* Enhanced form field styling */
+.form-row input[type="text"], 
+.form-row input[type="password"], 
+.form-row input[type="email"],
+.form-row input[type="url"], 
+.form-row input[type="number"],
+.form-row textarea, 
+.form-row select {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    background: white !important;
+}
+
+.form-row input:focus, 
+.form-row textarea:focus, 
+.form-row select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    outline: none !important;
+}
+
+.form-row .checkbox {
+    width: 16px !important;
+    height: 16px !important;
+    accent-color: #3b82f6 !important;
+}
+
+/* Required field styling */
+.form-row.required label:after {
+    content: " *";
+    color: #ef4444 !important;
+    font-weight: bold;
+}
+
+/* Error styling */
+.form-row.errors input,
+.form-row.errors textarea,
+.form-row.errors select {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+/* Help text */
+.help {
+    color: #6b7280 !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+}
+</style>

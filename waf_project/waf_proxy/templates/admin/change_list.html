@@ -1,0 +1,158 @@
+{% extends 'admin/base.html' %}
+{% load i18n admin_urls static admin_list %}
+
+{% block title %}{{ title }} | {% translate 'Django site admin' %}{% endblock %}
+
+{% block content_title %}
+<div class="flex items-center justify-between px-6 py-4 bg-white border-b border-cf-200">
+    <div>
+        <h1 class="text-2xl font-semibold text-cf-900 flex items-center">
+            {% if cl.opts.verbose_name_plural == 'users' %}
+                <i class="fas fa-users mr-3 text-primary-600"></i>
+            {% elif cl.opts.verbose_name_plural == 'sites' %}
+                <i class="fas fa-globe mr-3 text-secondary-600"></i>
+            {% elif cl.opts.verbose_name_plural == 'rules' %}
+                <i class="fas fa-shield-alt mr-3 text-red-600"></i>
+            {% elif cl.opts.verbose_name_plural == 'request logs' %}
+                <i class="fas fa-file-alt mr-3 text-yellow-600"></i>
+            {% else %}
+                <i class="fas fa-list mr-3 text-cf-600"></i>
+            {% endif %}
+            {{ title }}
+        </h1>
+        <p class="text-cf-600 mt-1">Manage {{ cl.opts.verbose_name_plural }}</p>
+    </div>
+    {% block object-tools %}
+        {% if has_add_permission %}
+        <div class="flex items-center space-x-3">
+            <a href="{% url cl.opts|admin_urlname:'add' %}" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2.5 transition-colors duration-200 flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                {% blocktranslate with name=cl.opts.verbose_name %}Add {{ name }}{% endblocktranslate %}
+            </a>
+        </div>
+        {% endif %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="px-6 py-6">
+    <!-- Filters and Search -->
+    {% if cl.has_filters %}
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf mb-6">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-filter mr-3 text-blue-600"></i>
+                {% translate 'Filter' %}
+            </h3>
+        </div>
+        <div class="p-6">
+            <div id="changelist-filter" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for spec in cl.filter_specs %}
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-cf-900">{{ spec.title }}</label>
+                        <div class="space-y-1">
+                            {% for choice in spec.choices %}
+                                <a href="{{ choice.query_string|iriencode }}" 
+                                   class="block px-3 py-2 text-sm rounded-lg transition-colors duration-200
+                                   {% if choice.selected %}bg-primary-100 text-primary-800 font-medium{% else %}text-cf-700 hover:bg-cf-100{% endif %}">
+                                    {{ choice.display }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Search -->
+    {% if cl.search_fields %}
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf mb-6">
+        <div class="p-6">
+            <form id="changelist-search" method="get">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-1 relative">
+                        <input type="text" name="{{ search_var }}" value="{{ cl.query }}" 
+                               placeholder="{% translate 'Search' %} {{ cl.opts.verbose_name_plural }}"
+                               class="w-full pl-10 pr-4 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-cf-400"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg px-4 py-2 transition-colors duration-200">
+                        <i class="fas fa-search mr-2"></i>
+                        {% translate 'Search' %}
+                    </button>
+                    {% if cl.query %}
+                    <a href="?" class="text-cf-700 bg-white border border-cf-300 hover:bg-cf-50 font-medium rounded-lg px-4 py-2 transition-colors duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        {% translate 'Clear' %}
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Results Table -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        {% if result_count %}
+        <div class="px-6 py-4 border-b border-cf-200">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-cf-600">
+                    {% if result_count == cl.full_result_count %}
+                        {{ result_count }} {{ cl.opts.verbose_name_plural }}
+                    {% else %}
+                        {{ result_count }} of {{ cl.full_result_count }} {{ cl.opts.verbose_name_plural }}
+                    {% endif %}
+                </div>
+                {% if cl.full_result_count > 200 %}
+                <div class="text-sm text-cf-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    {% translate 'Full result count' %}: {{ cl.full_result_count }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="overflow-x-auto">
+            {% block result_list %}
+                {% result_list cl %}
+            {% endblock %}
+        </div>
+
+        <!-- Pagination -->
+        {% if cl.result_count %}
+        <div class="px-6 py-4 border-t border-cf-200 bg-cf-50">
+            {% pagination cl %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if cl.result_count == 0 %}
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="p-12 text-center">
+            <i class="fas fa-inbox text-cf-300 text-6xl mb-6"></i>
+            <h3 class="text-xl font-semibold text-cf-900 mb-3">No {{ cl.opts.verbose_name_plural }} found</h3>
+            <p class="text-cf-600 mb-8">
+                {% if cl.query %}
+                    No {{ cl.opts.verbose_name_plural }} match your search criteria.
+                {% else %}
+                    Start by adding your first {{ cl.opts.verbose_name }}.
+                {% endif %}
+            </p>
+            {% if has_add_permission %}
+            <a href="{% url cl.opts|admin_urlname:'add' %}" class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg px-8 py-3 transition-colors duration-200 inline-flex items-center">
+                <i class="fas fa-plus mr-2"></i>
+                {% blocktranslate with name=cl.opts.verbose_name %}Add {{ name }}{% endblocktranslate %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

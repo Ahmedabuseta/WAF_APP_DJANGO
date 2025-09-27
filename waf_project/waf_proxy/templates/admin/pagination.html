@@ -1,0 +1,49 @@
+{% load i18n %}
+<div class="pagination-container flex items-center justify-between">
+    <div class="text-sm text-cf-600">
+        {% if results_count %}
+            {% blocktranslate count counter=results_count %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktranslate %}
+            {% if results_count != full_result_count %}
+                ({% blocktranslate count counter=full_result_count %}{{ counter }} total{% plural %}{{ counter }} total{% endblocktranslate %})
+            {% endif %}
+        {% endif %}
+    </div>
+    
+    {% if cl.result_count %}
+    <nav class="flex items-center space-x-2">
+        {% if cl.result_count != cl.full_result_count %}
+            <a href="?{% if cl.is_filtered %}{% for k, v in cl.params.items %}{% if not k|slice:":4" == "page" %}{{ k }}={{ v }}&{% endif %}{% endfor %}{% endif %}" 
+               class="px-3 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200 text-sm">
+                <i class="fas fa-list mr-1"></i>
+                {% translate 'Show all' %}
+            </a>
+        {% endif %}
+        
+        {% if cl.can_show_all and cl.multi_page %}
+            <span class="text-cf-400">|</span>
+        {% endif %}
+        
+        {% if cl.multi_page %}
+            {% if cl.has_previous %}
+                <a href="?page={{ cl.previous_page_number }}{% if cl.has_filters %}&{{ cl.get_query_string }}{% endif %}" 
+                   class="px-3 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            {% endif %}
+            
+            <span class="px-3 py-2 text-sm text-cf-600">
+                {% blocktranslate with page_num=cl.page_num num_pages=cl.paginator.num_pages %}
+                    Page {{ page_num }} of {{ num_pages }}
+                {% endblocktranslate %}
+            </span>
+            
+            {% if cl.has_next %}
+                <a href="?page={{ cl.next_page_number }}{% if cl.has_filters %}&{{ cl.get_query_string }}{% endif %}" 
+                   class="px-3 py-2 text-cf-700 bg-white border border-cf-300 rounded-lg hover:bg-cf-50 transition-colors duration-200">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
