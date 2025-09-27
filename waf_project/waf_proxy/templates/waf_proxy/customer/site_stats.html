@@ -202,11 +202,17 @@
             </div>
         </div>
         {% else %}
+        <!-- Sample Chart for Demo -->
         <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
-            <div class="p-12 text-center">
-                <i class="fas fa-chart-line text-cf-300 text-5xl mb-4"></i>
-                <h4 class="text-lg font-medium text-cf-900 mb-2">No Statistics Available</h4>
-                <p class="text-cf-600">Statistics will appear here once your site starts receiving traffic</p>
+            <div class="px-6 py-4 border-b border-cf-200">
+                <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                    <i class="fas fa-chart-line mr-3 text-blue-600"></i>
+                    Site Analytics Preview
+                </h3>
+                <p class="text-sm text-cf-600 mt-1">Sample data - Real data will appear with traffic</p>
+            </div>
+            <div class="p-6">
+                <canvas id="siteAnalyticsChart" width="400" height="250"></canvas>
             </div>
         </div>
         {% endif %}
@@ -448,5 +454,71 @@ function refreshStats() {
         location.reload();
     }, 1500);
 }
+
+// Initialize Site Analytics Chart
+document.addEventListener('DOMContentLoaded', function() {
+    const colors = {
+        primary: '#f97316',
+        secondary: '#3b82f6',
+        success: '#10b981',
+        danger: '#ef4444',
+        warning: '#f59e0b'
+    };
+
+    // Site Analytics Chart (if no real data available)
+    const siteChart = document.getElementById('siteAnalyticsChart');
+    if (siteChart) {
+        const siteCtx = siteChart.getContext('2d');
+        new Chart(siteCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan 21', 'Jan 22', 'Jan 23', 'Jan 24', 'Jan 25', 'Jan 26', 'Jan 27'],
+                datasets: [{
+                    label: 'Requests',
+                    data: [120, 190, 150, 210, 180, 240, 220],
+                    borderColor: colors.secondary,
+                    backgroundColor: colors.secondary + '20',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Blocked',
+                    data: [5, 8, 6, 12, 9, 15, 11],
+                    borderColor: colors.danger,
+                    backgroundColor: colors.danger + '20',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

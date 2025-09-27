@@ -133,6 +133,69 @@
     {% endif %}
 </div>
 
+<!-- Analytics Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Traffic Analytics Chart -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-chart-line mr-3 text-blue-600"></i>
+                Traffic Analytics
+            </h3>
+            <p class="text-sm text-cf-600 mt-1">Last 7 days activity</p>
+        </div>
+        <div class="p-6">
+            <canvas id="trafficChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Security Events Chart -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-shield-alt mr-3 text-red-600"></i>
+                Security Events
+            </h3>
+            <p class="text-sm text-cf-600 mt-1">Threats vs Clean Traffic</p>
+        </div>
+        <div class="p-6">
+            <canvas id="securityChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Regional Traffic Map -->
+<div class="bg-white border border-cf-200 rounded-lg shadow-cf mb-8">
+    <div class="px-6 py-4 border-b border-cf-200">
+        <h3 class="text-lg font-medium text-cf-900 flex items-center">
+            <i class="fas fa-globe-americas mr-3 text-green-600"></i>
+            Global Traffic Distribution
+        </h3>
+        <p class="text-sm text-cf-600 mt-1">Request origins by country</p>
+    </div>
+    <div class="p-6">
+        <div id="worldMap" style="height: 400px;"></div>
+        <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-3 bg-cf-50 rounded-lg">
+                <div class="text-lg font-bold text-cf-900">45%</div>
+                <div class="text-sm text-cf-600">United States</div>
+            </div>
+            <div class="text-center p-3 bg-cf-50 rounded-lg">
+                <div class="text-lg font-bold text-cf-900">23%</div>
+                <div class="text-sm text-cf-600">Europe</div>
+            </div>
+            <div class="text-center p-3 bg-cf-50 rounded-lg">
+                <div class="text-lg font-bold text-cf-900">18%</div>
+                <div class="text-sm text-cf-600">Asia Pacific</div>
+            </div>
+            <div class="text-center p-3 bg-cf-50 rounded-lg">
+                <div class="text-lg font-bold text-cf-900">14%</div>
+                <div class="text-sm text-cf-600">Other</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Recent Activity Section -->
 <div class="mb-8">
     <div class="flex items-center justify-between mb-6">
@@ -140,12 +203,15 @@
             <i class="fas fa-history mr-3 text-yellow-600"></i>
             Recent Activity
         </h2>
+        <a href="{% url 'site_list' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+            View All Sites <i class="fas fa-arrow-right ml-1"></i>
+        </a>
     </div>
     
     {% if recent_logs %}
         <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
             <div class="divide-y divide-cf-200">
-                {% for log in recent_logs %}
+                {% for log in recent_logs|slice:":5" %}
                     <div class="p-4 hover:bg-cf-50 transition-colors duration-200">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-4">
@@ -254,3 +320,146 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cloudflare-style color palette
+    const colors = {
+        primary: '#f97316',
+        secondary: '#3b82f6',
+        success: '#10b981',
+        danger: '#ef4444',
+        warning: '#f59e0b',
+        info: '#06b6d4',
+        gray: '#6b7280'
+    };
+
+    // Traffic Analytics Chart
+    const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+    new Chart(trafficCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan 21', 'Jan 22', 'Jan 23', 'Jan 24', 'Jan 25', 'Jan 26', 'Jan 27'],
+            datasets: [{
+                label: 'Total Requests',
+                data: [1200, 1900, 1500, 2100, 1800, 2400, 2200],
+                borderColor: colors.secondary,
+                backgroundColor: colors.secondary + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Blocked Requests',
+                data: [45, 78, 52, 89, 67, 94, 81],
+                borderColor: colors.danger,
+                backgroundColor: colors.danger + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Security Events Doughnut Chart
+    const securityCtx = document.getElementById('securityChart').getContext('2d');
+    new Chart(securityCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Clean Traffic', 'SQL Injection', 'XSS Attempts', 'Rate Limited', 'Bot Traffic'],
+            datasets: [{
+                data: [85, 6, 4, 3, 2],
+                backgroundColor: [
+                    colors.success,
+                    colors.danger,
+                    colors.warning,
+                    colors.info,
+                    colors.gray
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                }
+            }
+        }
+    });
+
+    // World Map for Regional Traffic
+    const map = new jsVectorMap({
+        selector: '#worldMap',
+        map: 'world',
+        backgroundColor: '#f8fafc',
+        regionStyle: {
+            initial: {
+                fill: '#e2e8f0'
+            },
+            hover: {
+                fill: colors.primary,
+                cursor: 'pointer'
+            }
+        },
+        series: {
+            regions: [{
+                values: {
+                    'US': 45,
+                    'GB': 12,
+                    'DE': 8,
+                    'FR': 6,
+                    'CA': 5,
+                    'AU': 4,
+                    'JP': 3,
+                    'CN': 3,
+                    'BR': 2,
+                    'IN': 2,
+                    'RU': 2,
+                    'IT': 2,
+                    'ES': 2,
+                    'NL': 1,
+                    'SE': 1,
+                    'NO': 1,
+                    'DK': 1
+                },
+                scale: [colors.secondary + '30', colors.secondary],
+                normalizeFunction: 'polynomial'
+            }]
+        },
+        onRegionTooltipShow: function(e, el, code) {
+            const value = el.series.regions[0].values[code] || 0;
+            el.html(el.html() + ' - ' + value + '% of traffic');
+        }
+    });
+});
+</script>

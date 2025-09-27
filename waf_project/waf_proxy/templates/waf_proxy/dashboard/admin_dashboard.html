@@ -320,66 +320,110 @@
     </div>
 </div>
 
-<!-- Recent Customers and Sites -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Recent Customers -->
+<!-- Advanced Analytics Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Global Traffic Analytics -->
     <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
-        <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-cf-200">
             <h3 class="text-lg font-medium text-cf-900 flex items-center">
-                <i class="fas fa-user-plus mr-3 text-primary-600"></i>
-                Recent Customers
+                <i class="fas fa-chart-area mr-3 text-blue-600"></i>
+                Global Traffic Analytics
             </h3>
-            <a href="{% url 'customer_list' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                View All <i class="fas fa-arrow-right ml-1"></i>
-            </a>
+            <p class="text-sm text-cf-600 mt-1">All customers - Last 30 days</p>
         </div>
         <div class="p-6">
-            <div class="space-y-4">
-                <!-- This would be populated with actual recent customers -->
-                <div class="flex items-center space-x-3 p-3 bg-cf-50 rounded-lg">
-                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                        JD
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-cf-900">john@example.com</div>
-                        <div class="text-sm text-cf-600">2 sites • Joined 3 days ago</div>
-                    </div>
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                    </span>
-                </div>
-            </div>
+            <canvas id="globalTrafficChart" width="400" height="200"></canvas>
         </div>
     </div>
 
-    <!-- Recently Added Sites -->
+    <!-- Threat Detection Analytics -->
     <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
-        <div class="px-6 py-4 border-b border-cf-200 flex items-center justify-between">
+        <div class="px-6 py-4 border-b border-cf-200">
             <h3 class="text-lg font-medium text-cf-900 flex items-center">
-                <i class="fas fa-globe mr-3 text-secondary-600"></i>
-                Recently Added Sites
+                <i class="fas fa-shield-alt mr-3 text-red-600"></i>
+                Threat Detection Breakdown
             </h3>
-            <a href="{% url 'admin_site_list' %}" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                View All <i class="fas fa-arrow-right ml-1"></i>
-            </a>
+            <p class="text-sm text-cf-600 mt-1">Security events by type</p>
         </div>
         <div class="p-6">
-            <div class="space-y-4">
-                <!-- This would be populated with actual recent sites -->
-                <div class="flex items-center space-x-3 p-3 bg-cf-50 rounded-lg">
-                    <div class="w-10 h-10 bg-secondary-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-globe text-secondary-600"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="font-medium text-cf-900">example.com</div>
-                        <div class="text-sm text-cf-600">john@example.com • 2 hours ago</div>
-                    </div>
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <i class="fas fa-shield-alt mr-1"></i>
-                        Protected
-                    </span>
-                </div>
+            <canvas id="threatChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Global Request Origins Map -->
+<div class="bg-white border border-cf-200 rounded-lg shadow-cf mb-8">
+    <div class="px-6 py-4 border-b border-cf-200">
+        <h3 class="text-lg font-medium text-cf-900 flex items-center">
+            <i class="fas fa-globe-americas mr-3 text-green-600"></i>
+            Global Request Origins
+        </h3>
+        <p class="text-sm text-cf-600 mt-1">Traffic distribution across all customer sites</p>
+    </div>
+    <div class="p-6">
+        <div id="adminWorldMap" style="height: 500px;"></div>
+        <div class="mt-6 grid grid-cols-2 md:grid-cols-6 gap-4">
+            <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+                <div class="text-2xl font-bold text-blue-600 mb-1">45%</div>
+                <div class="text-sm text-cf-600">United States</div>
+                <div class="text-xs text-cf-500 mt-1">12.5K requests</div>
             </div>
+            <div class="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                <div class="text-2xl font-bold text-green-600 mb-1">23%</div>
+                <div class="text-sm text-cf-600">Europe</div>
+                <div class="text-xs text-cf-500 mt-1">6.4K requests</div>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
+                <div class="text-2xl font-bold text-yellow-600 mb-1">18%</div>
+                <div class="text-sm text-cf-600">Asia Pacific</div>
+                <div class="text-xs text-cf-500 mt-1">5.0K requests</div>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                <div class="text-2xl font-bold text-purple-600 mb-1">8%</div>
+                <div class="text-sm text-cf-600">South America</div>
+                <div class="text-xs text-cf-500 mt-1">2.2K requests</div>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200">
+                <div class="text-2xl font-bold text-indigo-600 mb-1">4%</div>
+                <div class="text-sm text-cf-600">Africa</div>
+                <div class="text-xs text-cf-500 mt-1">1.1K requests</div>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg border border-pink-200">
+                <div class="text-2xl font-bold text-pink-600 mb-1">2%</div>
+                <div class="text-sm text-cf-600">Other</div>
+                <div class="text-xs text-cf-500 mt-1">556 requests</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Growth and Performance -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Customer Growth Chart -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-users mr-3 text-primary-600"></i>
+                Customer Growth
+            </h3>
+            <p class="text-sm text-cf-600 mt-1">New customers over time</p>
+        </div>
+        <div class="p-6">
+            <canvas id="customerGrowthChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Response Time Performance -->
+    <div class="bg-white border border-cf-200 rounded-lg shadow-cf">
+        <div class="px-6 py-4 border-b border-cf-200">
+            <h3 class="text-lg font-medium text-cf-900 flex items-center">
+                <i class="fas fa-tachometer-alt mr-3 text-green-600"></i>
+                Response Time Performance
+            </h3>
+            <p class="text-sm text-cf-600 mt-1">Average response times</p>
+        </div>
+        <div class="p-6">
+            <canvas id="performanceChart" width="400" height="200"></canvas>
         </div>
     </div>
 </div>
@@ -516,5 +560,287 @@ function enableMaintenance() {
         alert(`${type.charAt(0).toUpperCase() + type.slice(1)} maintenance mode enabled.`);
     }
 }
+
+// Initialize Admin Analytics Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Cloudflare color palette
+    const colors = {
+        primary: '#f97316',
+        secondary: '#3b82f6',
+        success: '#10b981',
+        danger: '#ef4444',
+        warning: '#f59e0b',
+        info: '#06b6d4',
+        purple: '#8b5cf6',
+        indigo: '#6366f1',
+        pink: '#ec4899',
+        gray: '#6b7280'
+    };
+
+    // Global Traffic Analytics Chart
+    const globalTrafficCtx = document.getElementById('globalTrafficChart').getContext('2d');
+    new Chart(globalTrafficCtx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+            datasets: [{
+                label: 'Total Requests',
+                data: [45000, 52000, 48000, 61000, 58000, 67000],
+                borderColor: colors.secondary,
+                backgroundColor: colors.secondary + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Blocked Threats',
+                data: [2100, 2400, 2200, 2800, 2600, 3100],
+                borderColor: colors.danger,
+                backgroundColor: colors.danger + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }, {
+                label: 'Clean Traffic',
+                data: [42900, 49600, 45800, 58200, 55400, 63900],
+                borderColor: colors.success,
+                backgroundColor: colors.success + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Threat Detection Breakdown Chart
+    const threatCtx = document.getElementById('threatChart').getContext('2d');
+    new Chart(threatCtx, {
+        type: 'bar',
+        data: {
+            labels: ['SQL Injection', 'XSS Attacks', 'Path Traversal', 'Rate Limited', 'Bot Traffic', 'Other'],
+            datasets: [{
+                label: 'Blocked Threats',
+                data: [1250, 890, 445, 320, 280, 115],
+                backgroundColor: [
+                    colors.danger,
+                    colors.warning,
+                    colors.info,
+                    colors.secondary,
+                    colors.purple,
+                    colors.gray
+                ],
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Customer Growth Chart
+    const customerGrowthCtx = document.getElementById('customerGrowthChart').getContext('2d');
+    new Chart(customerGrowthCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'New Customers',
+                data: [12, 19, 15, 23, 18, 28, 24, 31, 27, 35, 29, 42],
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Performance Chart
+    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [{
+                label: 'Response Time (ms)',
+                data: [45, 42, 38, 52, 48, 43, 41],
+                borderColor: colors.success,
+                backgroundColor: colors.success + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Admin World Map for Global Traffic
+    const adminMap = new jsVectorMap({
+        selector: '#adminWorldMap',
+        map: 'world',
+        backgroundColor: '#f8fafc',
+        regionStyle: {
+            initial: {
+                fill: '#e2e8f0',
+                stroke: '#cbd5e1',
+                strokeWidth: 1
+            },
+            hover: {
+                fill: colors.primary,
+                cursor: 'pointer'
+            }
+        },
+        series: {
+            regions: [{
+                values: {
+                    'US': 12500,
+                    'GB': 3200,
+                    'DE': 2800,
+                    'FR': 2400,
+                    'CA': 1800,
+                    'AU': 1600,
+                    'JP': 1400,
+                    'CN': 1200,
+                    'BR': 1000,
+                    'IN': 900,
+                    'RU': 800,
+                    'IT': 700,
+                    'ES': 650,
+                    'NL': 600,
+                    'SE': 450,
+                    'NO': 400,
+                    'DK': 350,
+                    'MX': 320,
+                    'AR': 280,
+                    'ZA': 250
+                },
+                scale: [colors.secondary + '30', colors.secondary],
+                normalizeFunction: 'polynomial'
+            }]
+        },
+        onRegionTooltipShow: function(e, el, code) {
+            const value = el.series.regions[0].values[code] || 0;
+            el.html(el.html() + '<br><strong>' + value.toLocaleString() + ' requests</strong>');
+        },
+        markers: [
+            {
+                name: 'High Traffic Zone - US East',
+                coords: [40.7128, -74.0060],
+                style: {
+                    fill: colors.danger,
+                    stroke: '#fff',
+                    strokeWidth: 2,
+                    r: 8
+                }
+            },
+            {
+                name: 'High Traffic Zone - EU West',
+                coords: [51.5074, -0.1278],
+                style: {
+                    fill: colors.warning,
+                    stroke: '#fff',
+                    strokeWidth: 2,
+                    r: 6
+                }
+            },
+            {
+                name: 'Emerging Market - Asia',
+                coords: [35.6762, 139.6503],
+                style: {
+                    fill: colors.info,
+                    stroke: '#fff',
+                    strokeWidth: 2,
+                    r: 5
+                }
+            }
+        ]
+    });
+});
 </script>
 {% endblock %}
