@@ -141,27 +141,19 @@
                     <p class="mt-1 text-sm text-cf-500">Update your password to keep your account secure.</p>
                 </div>
                 <div class="px-6 py-6">
-                    <form method="post" action="{% url 'change_password' %}" class="space-y-4">
-                        {% csrf_token %}
-                        <div>
-                            <label for="current_password" class="block text-sm font-medium text-cf-900 mb-2">Current Password</label>
-                            <input type="password" id="current_password" name="current_password" 
-                                   class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                        <div class="flex">
+                            <i class="fas fa-info-circle text-yellow-600 mr-3 mt-0.5"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-yellow-800">Password Change</h4>
+                                <p class="text-sm text-yellow-700 mt-1">To change your password, please use the "Forgot Password" link on the login page or contact support.</p>
+                            </div>
                         </div>
-                        <div>
-                            <label for="new_password" class="block text-sm font-medium text-cf-900 mb-2">New Password</label>
-                            <input type="password" id="new_password" name="new_password" 
-                                   class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
-                        </div>
-                        <div>
-                            <label for="confirm_password" class="block text-sm font-medium text-cf-900 mb-2">Confirm New Password</label>
-                            <input type="password" id="confirm_password" name="confirm_password" 
-                                   class="w-full px-3 py-2 border border-cf-300 rounded-lg focus:ring-primary-500 focus:border-primary-500" required>
-                        </div>
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg px-4 py-2 transition-colors duration-200">
-                            Update Password
-                        </button>
-                    </form>
+                    </div>
+                    <a href="{% url 'forgot_password' %}" class="bg-secondary-600 hover:bg-secondary-700 text-white font-medium rounded-lg px-4 py-2 transition-colors duration-200 inline-flex items-center">
+                        <i class="fas fa-key mr-2"></i>
+                        Reset Password via Email
+                    </a>
                 </div>
             </div>
 
