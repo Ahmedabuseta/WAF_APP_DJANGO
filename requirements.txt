@@ -4,3 +4,4 @@ PyJWT>=2.8.0
 django-allauth>=0.57.0
 python-decouple>=3.8
 psutil>=5.9.0
+django-jazzmin>=2.6.0

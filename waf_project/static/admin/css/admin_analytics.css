@@ -1,0 +1,265 @@
+/* WAF Security Admin Analytics Styling */
+
+/* Override Jazzmin dashboard styling for analytics */
+.content-wrapper {
+    background: #f8fafc !important;
+}
+
+/* Analytics Cards */
+.analytics-card {
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
+}
+
+.analytics-header {
+    background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%) !important;
+    color: white !important;
+    padding: 20px 24px !important;
+    font-weight: 600 !important;
+    font-size: 18px !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+.analytics-content {
+    padding: 24px !important;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    gap: 20px !important;
+    margin-bottom: 32px !important;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    text-align: center !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.stat-value {
+    font-size: 28px !important;
+    font-weight: bold !important;
+    color: #334155 !important;
+    margin-bottom: 8px !important;
+    line-height: 1 !important;
+}
+
+.stat-label {
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Chart Containers */
+.chart-container {
+    position: relative !important;
+    height: 300px !important;
+    margin-bottom: 24px !important;
+    background: white !important;
+    border-radius: 8px !important;
+    padding: 16px !important;
+}
+
+.charts-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+    margin-bottom: 32px !important;
+}
+
+/* World Map Styling */
+#worldMapAdmin {
+    height: 400px !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.region-stats {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 16px !important;
+    margin-top: 20px !important;
+}
+
+.region-stat {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 16px 12px !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    transition: all 0.2s ease !important;
+}
+
+.region-stat:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.region-stat .value {
+    font-weight: bold !important;
+    color: #334155 !important;
+    font-size: 20px !important;
+    margin-bottom: 4px !important;
+}
+
+.region-stat .label {
+    color: #64748b !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+/* Chart Headers */
+.chart-header {
+    color: #334155 !important;
+    font-weight: 600 !important;
+    margin-bottom: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 16px !important;
+}
+
+.chart-header i {
+    margin-right: 8px !important;
+    width: 20px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    
+    .analytics-content {
+        padding: 16px !important;
+    }
+    
+    .analytics-header {
+        padding: 16px 20px !important;
+        font-size: 16px !important;
+    }
+    
+    .stat-card {
+        padding: 16px 12px !important;
+    }
+    
+    .stat-value {
+        font-size: 24px !important;
+    }
+    
+    .region-stats {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .region-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Integration with Jazzmin */
+.main-sidebar .nav-sidebar {
+    background: #1e293b !important;
+}
+
+.navbar-nav .nav-link {
+    color: #64748b !important;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #3b82f6 !important;
+}
+
+/* Custom module headers to match our gradient */
+.dashboard .module h2,
+.dashboard .module caption {
+    background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 16px 20px !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+/* Make default admin tables look better */
+.dashboard .module table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+}
+
+.dashboard .module td {
+    padding: 12px 20px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.dashboard .module tr:hover {
+    background: #f8fafc !important;
+}
+
+.dashboard .module th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    text-transform: uppercase !important;
+    font-size: 12px !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Action links styling */
+.dashboard .module a {
+    color: #3b82f6 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: color 0.2s ease !important;
+}
+
+.dashboard .module a:hover {
+    color: #1d4ed8 !important;
+}
+
+.addlink:before {
+    content: "\002B";
+    color: #10b981 !important;
+    font-weight: bold !important;
+    margin-right: 6px !important;
+}
+
+.changelink:before {
+    content: "\270E";
+    color: #f59e0b !important;
+    margin-right: 6px !important;
+}
+
+.viewlink:before {
+    content: "\1F441";
+    color: #3b82f6 !important;
+    margin-right: 6px !important;
+}
